@@ -1,10 +1,11 @@
 "use server";
 
 /**
- * Server Actions de /admin/negocio. Cada tarjeta del panel guarda solo su
- * sección (`section` en el formulario); la validación está en
- * `business-form.ts`. Los cambios afectan todo el sitio (contacto, mapa,
- * SEO en el layout), así que se regenera completo.
+ * Server Actions de /admin/negocio y /admin/horario (las dos editan
+ * `business_settings`). Cada tarjeta del panel guarda solo su sección
+ * (`section` en el formulario); la validación está en `business-form.ts`.
+ * Los cambios afectan todo el sitio (contacto, mapa, horario, SEO en el
+ * layout), así que se regenera completo.
  */
 
 import { revalidatePath } from "next/cache";
@@ -16,32 +17,39 @@ import { requireAdminUser } from "./auth";
 import { getBusinessSettingsAdmin } from "./data";
 import {
   parseContactSection,
+  parseHoursSection,
   parseLocationSection,
   parseOrdersSection,
   parsePaymentsSection,
   parseScheduledSection,
   parseSiteSection,
+  parseTimeFormatSection,
 } from "./business-form";
 import type { FormResult } from "./menu-form";
 import type { TablesUpdate } from "../database.types";
 
 const PATH = "/admin/negocio";
+const HOURS_PATH = "/admin/horario";
 
-function fail(message: string): never {
-  redirect(`${PATH}?error=${encodeURIComponent(message)}`);
+function fail(message: string, path = PATH): never {
+  redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
-function succeed(message: string, anchor: string): never {
-  redirect(`${PATH}?saved=${encodeURIComponent(message)}#${anchor}`);
+function succeed(message: string, anchor: string, path = PATH): never {
+  redirect(`${path}?saved=${encodeURIComponent(message)}#${anchor}`);
 }
 
-const SECTIONS: Record<string, { label: string; parse: (form: FormData) => FormResult<TablesUpdate<"business_settings">> }> = {
-  contacto: { label: "Contacto y redes", parse: parseContactSection },
-  ubicacion: { label: "Ubicación", parse: parseLocationSection },
-  pedidos: { label: "Tipos de pedido y envío", parse: (form) => parseOrdersSection(form, env.stripeReady) },
-  pagos: { label: "Métodos de pago", parse: (form) => parsePaymentsSection(form, env.stripeReady) },
-  programados: { label: "Pedidos programados", parse: parseScheduledSection },
-  sitio: { label: "Sitio y Google", parse: parseSiteSection },
+type Section = { label: string; path: string; parse: (form: FormData) => FormResult<TablesUpdate<"business_settings">> };
+
+const SECTIONS: Record<string, Section> = {
+  contacto: { label: "Contacto y redes", path: PATH, parse: parseContactSection },
+  ubicacion: { label: "Ubicación", path: PATH, parse: parseLocationSection },
+  pedidos: { label: "Tipos de pedido y envío", path: PATH, parse: (form) => parseOrdersSection(form, env.stripeReady) },
+  pagos: { label: "Métodos de pago", path: PATH, parse: (form) => parsePaymentsSection(form, env.stripeReady) },
+  programados: { label: "Pedidos programados", path: PATH, parse: parseScheduledSection },
+  sitio: { label: "Sitio y Google", path: PATH, parse: parseSiteSection },
+  dias: { label: "Días y horas", path: HOURS_PATH, parse: parseHoursSection },
+  formato: { label: "Cómo se escribe la hora", path: HOURS_PATH, parse: parseTimeFormatSection },
 };
 
 async function updateSettings(values: TablesUpdate<"business_settings">) {
@@ -60,9 +68,9 @@ export async function saveBusinessSectionAction(formData: FormData): Promise<voi
   if (!section) fail("Sección desconocida.");
 
   const parsed = section.parse(formData);
-  if (!parsed.ok) fail(parsed.error);
+  if (!parsed.ok) fail(parsed.error, section.path);
   await updateSettings(parsed.value);
-  succeed(`${section.label}: guardado.`, key);
+  succeed(`${section.label}: guardado.`, key, section.path);
 }
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;

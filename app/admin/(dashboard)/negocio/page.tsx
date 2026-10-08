@@ -1,5 +1,4 @@
 import { requireAdminUser } from "@/lib/admin/auth";
-import { saveBusinessSectionAction } from "@/lib/admin/business-actions";
 import { MAX_DAYS_AHEAD, SLOT_MINUTE_OPTIONS } from "@/lib/admin/business-form";
 import { getBusinessSettingsAdmin } from "@/lib/admin/data";
 import { env } from "@/lib/config/business";
@@ -12,8 +11,9 @@ import {
 } from "@/lib/payment-methods";
 import { DEFAULT_SEO_DESCRIPTION, DEFAULT_SEO_TITLE, SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "@/lib/seo";
 import { getSiteAssetUrl } from "@/lib/storage";
+import { SettingsSection as Section } from "../SettingsSection";
 import { Toggle } from "../Toggle";
-import { cardClass, hintClass, inputClass, labelClass, primaryButtonClass } from "../ui";
+import { cardClass, hintClass, inputClass, labelClass } from "../ui";
 import { LogoUploader } from "./LogoUploader";
 
 export const dynamic = "force-dynamic";
@@ -303,21 +303,6 @@ export default async function AdminBusinessPage() {
         <LogoUploader logoUrl={getSiteAssetUrl(settings.logo_path)} />
       </section>
     </div>
-  );
-}
-
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
-  return (
-    <form id={id} action={saveBusinessSectionAction} className={`${cardClass} flex scroll-mt-24 flex-col gap-4`}>
-      <input type="hidden" name="section" value={id} />
-      <h2 className="font-display text-xl font-semibold">{title}</h2>
-      {children}
-      <div className="flex justify-end">
-        <button type="submit" className={primaryButtonClass}>
-          Guardar
-        </button>
-      </div>
-    </form>
   );
 }
 

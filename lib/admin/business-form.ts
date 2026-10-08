@@ -4,10 +4,12 @@
  * Regresa las columnas de `business_settings` listas para `update`.
  */
 
-import type { TablesUpdate } from "../database.types";
+import type { Json, TablesUpdate } from "../database.types";
 import { parsePesosToCents } from "../money";
 import { ALLOWED_METHODS, PAYMENT_METHODS, type OrderType, type PaymentMatrix, type PaymentMethod } from "../payment-methods";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo";
+import { isTimeFormat } from "../time-format";
+import { DAY_NAMES, isTimeOfDay, type WeeklyHour } from "../weekly-hours";
 import type { FormLike, FormResult } from "./menu-form";
 
 type SettingsUpdate = TablesUpdate<"business_settings">;
@@ -208,4 +210,34 @@ export function parseSiteSection(form: FormLike): FormResult<SettingsUpdate> {
       seo_description: seoDescription || null,
     },
   };
+}
+
+/** El `<input type="time">` puede mandar "19:00" o "19:00:00". */
+function timeField(form: FormLike, name: string): string | null {
+  const value = text(form, name).slice(0, 5);
+  return isTimeOfDay(value) ? value : null;
+}
+
+/**
+ * /admin/horario: `open_N`, `start_N`, `end_N` por día (0 = domingo). Si
+ * cierra antes de abrir (p. ej. 19:00 a 01:00) se entiende que cierra
+ * después de medianoche. Todos cerrados se permite (vacaciones).
+ */
+export function parseHoursSection(form: FormLike): FormResult<SettingsUpdate> {
+  const hours: WeeklyHour[] = [];
+  for (let day = 0; day < 7; day++) {
+    if (!on(form, `open_${day}`)) continue;
+    const start = timeField(form, `start_${day}`);
+    const end = timeField(form, `end_${day}`);
+    if (!start || !end) return { ok: false, error: `Revisa las horas del ${DAY_NAMES[day]}.` };
+    if (start === end) return { ok: false, error: `El ${DAY_NAMES[day]} abre y cierra a la misma hora.` };
+    hours.push({ day, start, end });
+  }
+  return { ok: true, value: { weekly_hours: hours as unknown as NonNullable<Json> } };
+}
+
+export function parseTimeFormatSection(form: FormLike): FormResult<SettingsUpdate> {
+  const format = text(form, "time_format");
+  if (!isTimeFormat(format)) return { ok: false, error: "Elige cómo se escribe la hora." };
+  return { ok: true, value: { time_format: format } };
 }

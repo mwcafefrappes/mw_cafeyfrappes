@@ -121,14 +121,18 @@ agotado, mínimo/máximo; se reutiliza en el servidor en la Fase 5) y
       cada cuántos minutos, máximo por horario, días adelante), contacto y
       redes, ubicación, sitio y Google, ícono del sitio. Domicilio y
       tarjeta bloqueados hasta que exista `STRIPE_SECRET_KEY` (Fase 6)
-- [ ] Horario de apertura
+- [x] Horario (`/admin/horario`): días y horas de apertura (un horario
+      por día, cierre después de medianoche permitido, todos cerrados
+      permitido) y cómo se escribe la hora en el sitio, con vista previa
+      de lo que ve el cliente. Probado contra Supabase local
 - [ ] Landing
 - [ ] QR: estudio de QR por mesa dentro del panel (portar el artefacto)
 - [ ] Métricas: visitas al menú, productos más vistos, clics a WhatsApp
 
 **Pruebas:** `lib/admin/menu-form.test.ts` (validación de producto,
 tamaños, categorías, extras, orden) y `lib/admin/business-form.test.ts`
-(WhatsApp, CLABE, matriz de pagos, envío, programados, SEO). 117 pasan.
+(WhatsApp, CLABE, matriz de pagos, envío, programados, SEO, días y
+horas, formato de hora). 121 pasan.
 
 ## Fase 5 — Pedidos (sin pago en línea) · pendiente
 

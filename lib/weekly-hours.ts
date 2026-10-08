@@ -24,6 +24,11 @@ const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/** "HH:MM" de 00:00 a 23:59. */
+export function isTimeOfDay(value: string): boolean {
+  return TIME_RE.test(value);
+}
+
 export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;

@@ -147,3 +147,16 @@ https://claude.ai/artifact/5ze7M1jtJog4Cdfih3PDRy
 - **WhatsApp se guarda como 52 + 10 dígitos** (formato de `wa.me`).
 - El "logo" editable se llama **"Ícono del sitio"** en el panel, porque
   solo cambia la pestaña, la vista al compartir y el panel.
+
+## 2026-10-08 — `/admin/horario` (Fase 4)
+
+- **Un horario por día** (abre y cierra), sin turnos partidos: MW abre
+  una sola vez por noche. Si hace falta, se agrega después.
+- **Cierre después de medianoche permitido** (de 7:00 p. m. a 1:00 a. m.
+  cuenta como abierto hasta la 1 del día siguiente).
+- **Se pueden cerrar todos los días** (vacaciones): el sitio dice
+  "Cerrado" sin fecha de apertura. El panel lo avisa.
+- **Un solo formato de hora para todo el sitio** (en Axel había uno para
+  la web y otro para WhatsApp; aquí no hay bot).
+- Pendiente de confirmar: cierres por fecha (días festivos, vacaciones
+  con fecha de regreso, "hoy no abrimos").

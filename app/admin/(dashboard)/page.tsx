@@ -64,7 +64,7 @@ export default async function AdminHomePage() {
       <section className="rounded-[10px] border border-brand-border p-4 text-sm">
         <h2 className="font-semibold">Lo que viene en el panel</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-brand-ink/80">
-          <li>Horario y landing.</li>
+          <li>Textos y fotos de la portada.</li>
           <li>QR para cada mesa.</li>
           <li>Pedidos en vivo.</li>
         </ul>

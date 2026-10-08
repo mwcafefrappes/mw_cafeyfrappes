@@ -95,9 +95,9 @@ La variante `dark:` de Tailwind respeta ambas cosas.
 - Desarrollo sin tocar producción: `scripts/dev-local.mjs` corre `next dev`
   con las llaves del Supabase local (le ganan a `.env.local`).
 
-## `/admin/negocio`
+## `/admin/negocio` y `/admin/horario`
 
-- Un formulario por tarjeta; todos van a `saveBusinessSectionAction`
+- Un formulario por tarjeta (`SettingsSection.tsx`); todos van a `saveBusinessSectionAction`
   (`lib/admin/business-actions.ts`) con `section`, que valida solo esa
   parte (`lib/admin/business-form.ts`) y regenera todo el sitio
   (`revalidatePath("/", "layout")`).
@@ -108,3 +108,6 @@ La variante `dark:` de Tailwind respeta ambas cosas.
 - Ícono del sitio (`logo_path`, bucket `site-assets`): el navegador lo
   reduce a 512 px PNG. Se usa como favicon, imagen al compartir e ícono
   del panel; el logo de la portada y el menú sigue siendo el de `public/brand`.
+- Horario: secciones `dias` (`weekly_hours`, un `{day, start, end}` por
+  día abierto; `end < start` = cierra después de medianoche) y `formato`
+  (`time_format`). Lo leen `lib/weekly-hours.ts` y `lib/time-format.ts`.

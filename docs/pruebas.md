@@ -19,7 +19,7 @@ pnpm build
 | `lib/item-price.test.ts` | Precio de un producto con tamaño y extras, agotado, extras ajenos o repetidos, mínimo y máximo por grupo |
 | `lib/landing-content.test.ts` | Textos de la landing: lo guardado manda, vacío cae al valor por defecto; links de Google/Apple Maps |
 | `lib/admin/menu-form.test.ts` | Formularios de `/admin/menu`: precio en centavos, tamaños (vacíos, repetidos, precio inválido), frío y caliente a la vez, mínimo/máximo de extras, slugs, mover arriba/abajo |
-| `lib/admin/business-form.test.ts` | `/admin/negocio`: WhatsApp a 52 + 10 dígitos, dígito verificador de la CLABE, domicilio y tarjeta solo con Stripe, al menos un método por tipo, envío en centavos, rangos de programados, matriz de pagos guardada (`lib/payment-methods.ts`) |
+| `lib/admin/business-form.test.ts` | `/admin/negocio` y `/admin/horario`: días y horas (solo días abiertos, segundos del navegador, cierre después de medianoche, misma hora rechazada, todos cerrados), formato de hora; WhatsApp a 52 + 10 dígitos, dígito verificador de la CLABE, domicilio y tarjeta solo con Stripe, al menos un método por tipo, envío en centavos, rangos de programados, matriz de pagos guardada (`lib/payment-methods.ts`) |
 | `lib/time-format.test.ts` | Formatos de hora (heredado de Axel) |
 | `lib/phone.test.ts` | Normalizar teléfonos mexicanos (heredado de Axel) |
 
@@ -101,3 +101,15 @@ Verificado 2026-10-08:
 - Sin `STRIPE_SECRET_KEY`: el switch de domicilio y la columna de tarjeta
   salen deshabilitados.
 - Al final se regresaron los valores originales en la BD local.
+
+## `/admin/horario` (manual, contra Supabase local)
+
+Verificado 2026-10-08:
+- Abrir el lunes 9:00–14:00 y cerrar el viernes a la 1:00 → la portada
+  muestra "Lunes", "Jueves", "Viernes 7:00 p. m. – 1:00 a. m." y "Sábado y
+  domingo".
+- Formato "7 de la tarde" → la portada y el aviso de "Abrimos…" cambian
+  al momento.
+- Jueves de 19:00 a 19:00 → "El jueves abre y cierra a la misma hora."
+- En celular (375 px) cada día queda en dos renglones, sin scroll de lado.
+- Al final se regresó jueves a domingo 19:00–23:00 y formato 12 h.

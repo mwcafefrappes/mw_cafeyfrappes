@@ -3,11 +3,13 @@ import {
   isValidClabe,
   normalizeWhatsapp,
   parseContactSection,
+  parseHoursSection,
   parseLocationSection,
   parseOrdersSection,
   parsePaymentsSection,
   parseScheduledSection,
   parseSiteSection,
+  parseTimeFormatSection,
 } from "./business-form";
 import type { FormLike } from "./menu-form";
 import { effectiveMethods, parsePaymentMatrix } from "../payment-methods";
@@ -175,5 +177,47 @@ describe("parsePaymentMatrix / effectiveMethods", () => {
     expect(effectiveMethods(matrix, "pickup", false)).toEqual(["cash"]);
     expect(effectiveMethods(matrix, "delivery", false)).toEqual([]);
     expect(effectiveMethods(matrix, "delivery", true)).toEqual(["card"]);
+  });
+});
+
+describe("parseHoursSection", () => {
+  const mwDays = Object.fromEntries(
+    [4, 5, 6, 0].flatMap((day) => [
+      [`open_${day}`, "on"],
+      [`start_${day}`, "19:00"],
+      [`end_${day}`, "23:00"],
+    ])
+  );
+
+  it("solo guarda los días abiertos (jueves a domingo)", () => {
+    const result = parseHoursSection(form({ ...mwDays, start_1: "09:00", end_1: "14:00" }));
+    expect(result).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.value.weekly_hours).toEqual([
+      { day: 0, start: "19:00", end: "23:00" },
+      { day: 4, start: "19:00", end: "23:00" },
+      { day: 5, start: "19:00", end: "23:00" },
+      { day: 6, start: "19:00", end: "23:00" },
+    ]);
+  });
+
+  it("acepta segundos del navegador y cierre después de medianoche", () => {
+    expect(parseHoursSection(form({ open_5: "on", start_5: "19:00:00", end_5: "01:00" }))).toMatchObject({
+      ok: true,
+      value: { weekly_hours: [{ day: 5, start: "19:00", end: "01:00" }] },
+    });
+  });
+
+  it("todos cerrados se permite; horas mal escritas o iguales no", () => {
+    expect(parseHoursSection(form({}))).toMatchObject({ ok: true, value: { weekly_hours: [] } });
+    expect(parseHoursSection(form({ open_4: "on", start_4: "7pm", end_4: "23:00" }))).toMatchObject({ ok: false });
+    expect(parseHoursSection(form({ open_4: "on", start_4: "19:00", end_4: "19:00" }))).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseTimeFormatSection", () => {
+  it("solo formatos conocidos", () => {
+    expect(parseTimeFormatSection(form({ time_format: "words" }))).toEqual({ ok: true, value: { time_format: "words" } });
+    expect(parseTimeFormatSection(form({ time_format: "am-pm" }))).toMatchObject({ ok: false });
   });
 });

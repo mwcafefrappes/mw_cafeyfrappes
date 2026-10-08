@@ -35,7 +35,10 @@ function requireEnv(name: string): string {
 }
 
 export const env = {
+  /** Sin `APP_BASE_URL`, el dominio de producción que Vercel da solo (variables de sistema). */
   get appBaseUrl() {
+    const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    if (!process.env.APP_BASE_URL && vercelUrl) return `https://${vercelUrl}`;
     return requireEnv("APP_BASE_URL");
   },
   get supabaseUrl() {

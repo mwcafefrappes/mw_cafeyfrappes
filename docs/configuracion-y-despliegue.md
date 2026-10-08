@@ -79,7 +79,7 @@ volver a correr `git push` cuando se arregle.
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Igual (anon / publishable) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Igual (service_role / secret). Nunca en el navegador |
-| `APP_BASE_URL` | `https://<proyecto>.vercel.app` |
+| `APP_BASE_URL` | `https://<proyecto>.vercel.app`. Si falta, se usa el dominio de producción de Vercel (`VERCEL_PROJECT_PRODUCTION_URL`, requiere "System Environment Variables" activado); sin ninguno de los dos, el build falla al generar `/` |
 | `CRON_SECRET` | Texto aleatorio largo (`openssl rand -hex 24`) |
 | `STRIPE_SECRET_KEY` | Fase 6. Mientras no exista, `/admin/negocio` no deja activar domicilio ni tarjeta |
 

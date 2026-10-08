@@ -1,7 +1,7 @@
 /**
- * Cómo se escribe una hora para el cliente. Se elige por separado para la
- * página web y para WhatsApp en `/admin/horario` (`time_format_web`,
- * `time_format_whatsapp`), así que cada canal puede cambiar sin tocar al otro.
+ * Cómo se escribe una hora para el cliente (`business_settings.time_format`,
+ * se elige en `/admin/horario`): horario de la landing, aviso de "Abrimos…"
+ * y, en la Fase 5, las horas de los pedidos programados.
  */
 
 export const TIME_FORMATS = ["24h", "12h", "words", "words_upper"] as const;
@@ -18,7 +18,7 @@ export function isTimeFormat(value: string): value is TimeFormat {
   return (TIME_FORMATS as readonly string[]).includes(value);
 }
 
-/** El valor guardado en `booking_settings`; si algo raro quedó ahí, "1 de la tarde". */
+/** El valor guardado en `business_settings`; si algo raro quedó ahí, "1 de la tarde". */
 export function parseTimeFormat(value: string | null | undefined): TimeFormat {
   return value && isTimeFormat(value) ? value : "words";
 }
