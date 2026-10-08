@@ -22,6 +22,9 @@
   `mw-cafeyfrappes.vercel.app` para el render del servidor.
 - **`supabase/config.toml`:** `project_id` y puertos 553xx (para que no
   choquen con Supabase local de otros clientes).
+- **`app/admin/(dashboard)/qr/`:** logo del centro del QR
+  (`/brand/mw-logo-espresso.png`), colores de los presets ("Espresso",
+  "Noche MW"…) y textos por defecto de la tarjeta en `page.tsx`.
 - **`lib/landing-content.ts`:** textos por defecto de la landing
   ("Somos parte de Mundo Waffle"…) e imágenes de respaldo de `public/sample`.
 - **`app/page.tsx`:** etiqueta "Extensión de …" y botón "Conoce …"

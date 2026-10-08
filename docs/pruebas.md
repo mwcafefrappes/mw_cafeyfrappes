@@ -19,8 +19,9 @@ pnpm build
 | `lib/item-price.test.ts` | Precio de un producto con tamaño y extras, agotado, extras ajenos o repetidos, mínimo y máximo por grupo |
 | `lib/landing-content.test.ts` | Textos de la landing: lo guardado manda, vacío cae al valor por defecto; links de Google/Apple Maps |
 | `lib/admin/menu-form.test.ts` | Formularios de `/admin/menu`: precio en centavos, tamaños (vacíos, repetidos, precio inválido), frío y caliente a la vez, mínimo/máximo de extras, slugs, mover arriba/abajo |
+| `lib/qr.test.ts` | `/admin/qr`: enlace con `?mesa=N` o sin mesa, hueco del logo (impar, dentro de lo que la corrección recupera, sin tocar las esquinas), contraste y avisos de color, nombres de archivo, usuario de Instagram |
 | `lib/admin/landing-form.test.ts` | `/admin/landing`: espacios y renglones, vacío o igual al original = `null`, sección desconocida, largos máximos, qué secciones llevan foto |
-| `lib/admin/business-form.test.ts` | `/admin/negocio` y `/admin/horario`: días y horas (solo días abiertos, segundos del navegador, cierre después de medianoche, misma hora rechazada, todos cerrados), formato de hora; WhatsApp a 52 + 10 dígitos, dígito verificador de la CLABE, domicilio y tarjeta solo con Stripe, al menos un método por tipo, envío en centavos, rangos de programados, matriz de pagos guardada (`lib/payment-methods.ts`) |
+| `lib/admin/business-form.test.ts` | `/admin/negocio` y `/admin/horario`: días y horas (solo días abiertos, segundos del navegador, cierre después de medianoche, misma hora rechazada, todos cerrados), formato de hora, número de mesas (1 a 99); WhatsApp a 52 + 10 dígitos, dígito verificador de la CLABE, domicilio y tarjeta solo con Stripe, al menos un método por tipo, envío en centavos, rangos de programados, matriz de pagos guardada (`lib/payment-methods.ts`) |
 | `lib/time-format.test.ts` | Formatos de hora (heredado de Axel) |
 | `lib/phone.test.ts` | Normalizar teléfonos mexicanos (heredado de Axel) |
 
@@ -126,3 +127,18 @@ Verificado 2026-10-08:
   borra de Storage.
 - Volver a escribir el título original → se guarda como `null`.
 - Al final: `landing_sections` sin valores propios y `site-assets` vacío.
+
+## `/admin/qr` (manual, contra Supabase local)
+
+Verificado 2026-10-08 (los QR se decodificaron con jsQR en el navegador):
+- Mesa 1, Mesa 4 y Mostrador → `…/menu?mesa=1`, `…/menu?mesa=4` y
+  `…/menu`, con el logo MW al centro y corrección alta.
+- Diseño difícil (puntos, colores "Noche MW", logo al 45 %, corrección
+  media) → se sigue leyendo; sale el aviso de QR claro sobre fondo oscuro.
+- Descargas: `mesa-2-qr.svg`, `mesa-2-tarjeta.png`, `mesa-2-qr.png` y
+  "Descargar las 6 mesas" → `mesa-1-tarjeta.png` … `mesa-6-tarjeta.png`.
+- Mesas 8 → aparecen Mesa 1…8; se regresó a 6.
+- Al recargar, el diseño se conserva; "Regresar al diseño original" lo limpia.
+- Con la dirección del sitio en localhost sale el aviso "solo funciona en
+  esta computadora".
+- En celular (375 px) la vista previa va primero, sin scroll de lado.

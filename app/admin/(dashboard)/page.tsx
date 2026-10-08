@@ -65,7 +65,6 @@ export default async function AdminHomePage() {
         <h2 className="font-semibold">Lo que viene en el panel</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-brand-ink/80">
           <li>Métricas de visitas.</li>
-          <li>QR para cada mesa.</li>
           <li>Pedidos en vivo.</li>
         </ul>
         <p className="mt-3">

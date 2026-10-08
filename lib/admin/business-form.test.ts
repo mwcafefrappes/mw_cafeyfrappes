@@ -9,6 +9,7 @@ import {
   parsePaymentsSection,
   parseScheduledSection,
   parseSiteSection,
+  parseTablesSection,
   parseTimeFormatSection,
 } from "./business-form";
 import type { FormLike } from "./menu-form";
@@ -219,5 +220,14 @@ describe("parseTimeFormatSection", () => {
   it("solo formatos conocidos", () => {
     expect(parseTimeFormatSection(form({ time_format: "words" }))).toEqual({ ok: true, value: { time_format: "words" } });
     expect(parseTimeFormatSection(form({ time_format: "am-pm" }))).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseTablesSection", () => {
+  it("de 1 a 99 mesas", () => {
+    expect(parseTablesSection(form({ table_count: "6" }))).toEqual({ ok: true, value: { table_count: 6 } });
+    expect(parseTablesSection(form({ table_count: "0" }))).toMatchObject({ ok: false });
+    expect(parseTablesSection(form({ table_count: "100" }))).toMatchObject({ ok: false });
+    expect(parseTablesSection(form({ table_count: "seis" }))).toMatchObject({ ok: false });
   });
 });

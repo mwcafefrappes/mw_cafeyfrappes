@@ -175,3 +175,22 @@ https://claude.ai/artifact/5ze7M1jtJog4Cdfih3PDRy
 - Fotos de portada a 2000 px JPG (se ve a lo ancho en computadora).
 - Pendiente: video (reel) en el encabezado, si Franco lo quiere.
 
+## 2026-10-08 — `/admin/qr` (Fase 4)
+
+- **6 mesas por ahora, editable en el panel** (confirmado por el usuario;
+  cierra P12). Columna `business_settings.table_count` (1 a 99). `?mesa=`
+  sigue aceptando 1 a 99; al pedir (Fase 5) se validará contra este número.
+- **El estudio es el mismo del artefacto**, ahora dentro del panel y con
+  `qr-code-styling` instalado en el proyecto (no desde un CDN).
+  Tipografías: las del sitio (Playfair + Figtree) en vez de Montserrat,
+  Poppins y Plex Mono, para no cargar letras extra.
+- **En las mesas el título es "Mesa N" y se pone solo**; la invitación de
+  mesa y la del mostrador se escriben por separado.
+- **El diseño se recuerda en el navegador** (no en la base): es para
+  imprimir de vez en cuando, no un dato del negocio. El logo subido no se
+  guarda; el de MW viene por defecto.
+- **"Descargar las N mesas"** baja una tarjeta por mesa (el navegador
+  puede pedir permiso para varias descargas).
+- **Aviso si la dirección del sitio es local** y recordatorio de que, si
+  cambia el dominio (P11), hay que reimprimir los QR.
+

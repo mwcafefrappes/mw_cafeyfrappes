@@ -1,7 +1,8 @@
 "use server";
 
 /**
- * Server Actions de /admin/negocio y /admin/horario (las dos editan
+ * Server Actions de /admin/negocio, /admin/horario y la parte de mesas de
+ * /admin/qr (todas editan
  * `business_settings`). Cada tarjeta del panel guarda solo su sección
  * (`section` en el formulario); la validación está en `business-form.ts`.
  * Los cambios afectan todo el sitio (contacto, mapa, horario, SEO en el
@@ -23,6 +24,7 @@ import {
   parsePaymentsSection,
   parseScheduledSection,
   parseSiteSection,
+  parseTablesSection,
   parseTimeFormatSection,
 } from "./business-form";
 import type { FormResult } from "./menu-form";
@@ -30,6 +32,7 @@ import type { TablesUpdate } from "../database.types";
 
 const PATH = "/admin/negocio";
 const HOURS_PATH = "/admin/horario";
+const QR_PATH = "/admin/qr";
 
 function fail(message: string, path = PATH): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -50,6 +53,7 @@ const SECTIONS: Record<string, Section> = {
   sitio: { label: "Sitio y Google", path: PATH, parse: parseSiteSection },
   dias: { label: "Días y horas", path: HOURS_PATH, parse: parseHoursSection },
   formato: { label: "Cómo se escribe la hora", path: HOURS_PATH, parse: parseTimeFormatSection },
+  mesas: { label: "Mesas", path: QR_PATH, parse: parseTablesSection },
 };
 
 async function updateSettings(values: TablesUpdate<"business_settings">) {

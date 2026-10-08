@@ -129,14 +129,20 @@ agotado, mínimo/máximo; se reutiliza en el servidor en la Fase 5) y
       de cada sección (vacío o igual al original = texto original), foto
       del encabezado y de "Quiénes somos" (se reduce a 2000 px), lista de
       favoritos actuales con enlace a Menú. Probado contra Supabase local
-- [ ] QR: estudio de QR por mesa dentro del panel (portar el artefacto)
+- [x] QR (`/admin/qr`): número de mesas (6, editable) y el estudio del
+      artefacto portado al panel: mostrador o mesa 1…N, logo MW al centro
+      (o subido, con recorte y quitado de fondo), texto al pie, colores,
+      formas; descarga de la tarjeta, del QR en PNG/SVG y de todas las
+      mesas de una vez. El diseño se recuerda en el navegador. Probado:
+      los QR se leen y llevan a `/menu?mesa=N`
 - [ ] Métricas: visitas al menú, productos más vistos, clics a WhatsApp
 
 **Pruebas:** `lib/admin/menu-form.test.ts` (validación de producto,
 tamaños, categorías, extras, orden) y `lib/admin/business-form.test.ts`
 (WhatsApp, CLABE, matriz de pagos, envío, programados, SEO, días y
 horas, formato de hora) y `lib/admin/landing-form.test.ts` (textos de
-la portada). 126 pasan.
+la portada), `lib/qr.test.ts` (enlace por mesa, hueco del logo,
+contraste) y número de mesas. 135 pasan.
 
 ## Fase 5 — Pedidos (sin pago en línea) · pendiente
 

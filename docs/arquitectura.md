@@ -122,3 +122,15 @@ La variante `dark:` de Tailwind respeta ambas cosas.
   defecto de `lib/landing-content.ts` (`resolveLandingSections`).
 - `MAX_FEATURED_PRODUCTS` (6) vive en `lib/landing-content.ts`; lo usan
   la portada y el panel.
+
+## `/admin/qr`
+
+- Número de mesas: sección `mesas` de `saveBusinessSectionAction`
+  (`business_settings.table_count`).
+- Estudio: `QrStudio.tsx` (cliente, cargado con `next/dynamic` sin SSR
+  desde `QrStudioLoader.tsx` para leer `localStorage` sin errores de
+  hidratación). Dibujo en `qr-render.ts` (qr-code-styling + canvas:
+  logo en un hueco alineado a la cuadrícula, tarjeta con pie de texto).
+  Cálculos puros en `lib/qr.ts`.
+- El enlace sale de la dirección del sitio (`resolveSiteBaseUrl`) +
+  `/menu`, con `?mesa=N` para las mesas.

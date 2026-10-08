@@ -7,6 +7,7 @@
 import type { Json, TablesUpdate } from "../database.types";
 import { parsePesosToCents } from "../money";
 import { ALLOWED_METHODS, PAYMENT_METHODS, type OrderType, type PaymentMatrix, type PaymentMethod } from "../payment-methods";
+import { MAX_TABLE_NUMBER } from "../menu";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo";
 import { isTimeFormat } from "../time-format";
 import { DAY_NAMES, isTimeOfDay, type WeeklyHour } from "../weekly-hours";
@@ -240,4 +241,11 @@ export function parseTimeFormatSection(form: FormLike): FormResult<SettingsUpdat
   const format = text(form, "time_format");
   if (!isTimeFormat(format)) return { ok: false, error: "Elige cómo se escribe la hora." };
   return { ok: true, value: { time_format: format } };
+}
+
+/** /admin/qr: cuántas mesas hay (de 1 a 99, el mismo tope que acepta `?mesa=`). */
+export function parseTablesSection(form: FormLike): FormResult<SettingsUpdate> {
+  const count = intInRange(text(form, "table_count"), 1, MAX_TABLE_NUMBER);
+  if (count === null) return { ok: false, error: `El número de mesas debe ser de 1 a ${MAX_TABLE_NUMBER}.` };
+  return { ok: true, value: { table_count: count } };
 }

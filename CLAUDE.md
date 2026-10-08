@@ -278,5 +278,4 @@ webhook de Stripe (modo de prueba) en `docs/pruebas.md`.
 | P9 | Alta de Stripe a nombre de Franco (RFC, cuenta bancaria, identificación) | 2026-10-06 |
 | P10 | Instagram: cuenta profesional y acceso a Meta Business (ver `docs/instagram.md`) | 2026-10-06 |
 | P11 | Dominio propio (opcional) | 2026-10-06 |
-| P12 | Número de mesas (para generar sus QR) | 2026-10-06 |
 | P13 | Responsable legal para `/privacidad` y `/terminos` (¿Franco García como persona física?) | 2026-10-06 |

@@ -53,6 +53,18 @@ Imprime una contraseña temporal una sola vez.
    `scripts/create-admin.mjs` usando las llaves de producción en un
    `.env.production.local` temporal (no se commitea).
 
+### Cambios de esquema después del primer deploy
+
+Cada migración nueva en `supabase/migrations/` se sube a producción con
+(sin `--include-seed`, para no tocar los datos reales):
+
+```bash
+pnpm exec supabase db push
+```
+
+Hacerlo **antes o junto** con el push del código que la usa. Ejemplo:
+`20261008000000_table_count.sql` (número de mesas de `/admin/qr`).
+
 ### Repos
 
 `origin` baja de `mauriciocastillo893/mw_cafeyfrappes` y sube a ese y a
