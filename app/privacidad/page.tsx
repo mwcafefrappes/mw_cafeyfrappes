@@ -55,7 +55,7 @@ export default function PrivacyPage() {
           <h2 className="font-semibold">4. Cookies y analítica</h2>
           <p className="mt-2">
             Usamos cookies técnicas para mantener la sesión del panel administrativo y para recordar su carrito.
-            Medimos visitas de forma anónima (Vercel Analytics), sin cookies de publicidad.
+            Medimos visitas de forma anónima (Vercel Analytics), sin cookies de publicidad. También contamos, por día y sin guardar quién lo hizo, cuántas veces se abre el menú, cada producto y los botones de WhatsApp, redes y mapas.
           </p>
         </li>
         <li>

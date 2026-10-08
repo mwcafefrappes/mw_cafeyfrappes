@@ -194,3 +194,22 @@ https://claude.ai/artifact/5ze7M1jtJog4Cdfih3PDRy
 - **Aviso si la dirección del sitio es local** y recordatorio de que, si
   cambia el dominio (P11), hay que reimprimir los QR.
 
+## 2026-10-08 — `/admin/metricas` (Fase 4)
+
+- **Contadores propios en Supabase** (elegido por el usuario): el plan
+  gratis de Vercel Analytics no cuenta eventos propios. Se cuentan
+  visitas al menú, escaneos por mesa, productos más vistos y clics a
+  WhatsApp y redes (los cuatro, confirmados). Las visitas generales y de
+  dónde llegan siguen en Vercel Analytics.
+- **Solo conteos por día** (día + métrica + clave + número): nada de
+  quién, ni IP, ni cookies nuevas. Así no hay que borrar datos viejos y
+  la tabla pesa unos KB al mes. Se agregó una línea al aviso de privacidad.
+- **La mesa cuenta solo si viene en el QR** (`?mesa=` en la URL), no la
+  recordada de una visita anterior.
+- **No se cuentan navegadores con la cookie del panel** (aunque ya se
+  haya salido): las pruebas y los teléfonos del negocio no inflan los
+  números.
+- La ruta acepta solo métricas y claves conocidas (mesa 1–99, id de
+  producto, 4 enlaces); lo demás se ignora. Alguien podría inflar los
+  conteos a propósito; para un negocio de este tamaño se acepta.
+

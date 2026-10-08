@@ -107,7 +107,7 @@ agotado, mínimo/máximo; se reutiliza en el servidor en la Fase 5) y
 
 **Pruebas:** `lib/landing-content.test.ts` (valores por defecto, links de mapas). 88 pasan.
 
-## Fase 4 — `/admin` · **en curso** (2026-10-08)
+## Fase 4 — `/admin` · **terminada** (2026-10-08)
 
 - [x] Menú (`/admin/menu`): productos (crear, editar, borrar, ordenar,
       agotado y oculto con un clic), tamaños, grupos de extras por
@@ -135,14 +135,19 @@ agotado, mínimo/máximo; se reutiliza en el servidor en la Fase 5) y
       formas; descarga de la tarjeta, del QR en PNG/SVG y de todas las
       mesas de una vez. El diseño se recuerda en el navegador. Probado:
       los QR se leen y llevan a `/menu?mesa=N`
-- [ ] Métricas: visitas al menú, productos más vistos, clics a WhatsApp
+- [x] Métricas (`/admin/metricas`): contadores propios por día en
+      `metric_counts` (sin datos de personas): visitas al menú (y desde
+      qué mesa), productos más vistos, clics a WhatsApp, Instagram,
+      Facebook y mapas. Periodos de 7, 30 y 90 días. No se cuentan
+      navegadores donde se entró al panel. Visitas generales: Vercel
 
 **Pruebas:** `lib/admin/menu-form.test.ts` (validación de producto,
 tamaños, categorías, extras, orden) y `lib/admin/business-form.test.ts`
 (WhatsApp, CLABE, matriz de pagos, envío, programados, SEO, días y
 horas, formato de hora) y `lib/admin/landing-form.test.ts` (textos de
 la portada), `lib/qr.test.ts` (enlace por mesa, hueco del logo,
-contraste) y número de mesas. 135 pasan.
+contraste), número de mesas y `lib/metrics.test.ts` (validación de
+conteos, fechas en hora de México, resumen). 140 pasan.
 
 ## Fase 5 — Pedidos (sin pago en línea) · pendiente
 

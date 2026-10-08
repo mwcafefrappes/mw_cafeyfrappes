@@ -63,7 +63,8 @@ pnpm exec supabase db push
 ```
 
 Hacerlo **antes o junto** con el push del código que la usa. Ejemplo:
-`20261008000000_table_count.sql` (número de mesas de `/admin/qr`).
+`20261008000000_table_count.sql` (número de mesas de `/admin/qr`, ya
+aplicada el 2026-10-08) y `20261009000000_metric_counts.sql` (métricas).
 
 ### Repos
 

@@ -137,3 +137,33 @@ export async function getLandingAdmin(): Promise<LandingAdmin> {
     .map((product) => product.name);
   return { rows: new Map(sections.data.map((row) => [row.key, row])), featuredNames };
 }
+
+export interface MetricsAdmin {
+  rows: { day: string; metric: string; key: string; count: number }[];
+  /** id → nombre de todos los productos (también ocultos), para la lista de más vistos. */
+  productNames: Map<string, string>;
+}
+
+/** Conteos desde `sinceDay` ("YYYY-MM-DD", hora de México) para /admin/metricas. */
+export async function getMetricsAdmin(sinceDay: string): Promise<MetricsAdmin> {
+  const supabase = getServiceSupabase();
+  // Supabase entrega máximo 1000 filas por consulta; 90 días pueden ser más.
+  const PAGE = 1000;
+  const rows: MetricsAdmin["rows"] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from("metric_counts")
+      .select("day, metric, key, count")
+      .gte("day", sinceDay)
+      .order("day")
+      .order("metric")
+      .order("key")
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < PAGE) break;
+  }
+  const { data: products, error } = await supabase.from("products").select("id, name");
+  if (error) throw error;
+  return { rows, productNames: new Map(products.map((p) => [p.id, p.name])) };
+}

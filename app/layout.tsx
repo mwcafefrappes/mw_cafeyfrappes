@@ -9,6 +9,7 @@ import { resolveSeo, resolveSiteBaseUrl } from "@/lib/seo";
 import { RegisterServiceWorker } from "./RegisterServiceWorker";
 import { PwaUpdateBanner } from "./PwaUpdateBanner";
 import { AppUpdateBanner } from "./AppUpdateBanner";
+import { TrackLinkClicks } from "./TrackLinkClicks";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -102,6 +103,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PwaUpdateBanner />
         <AppUpdateBanner />
         <Analytics />
+        <TrackLinkClicks />
       </body>
     </html>
   );

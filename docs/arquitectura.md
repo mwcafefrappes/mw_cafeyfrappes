@@ -134,3 +134,17 @@ La variante `dark:` de Tailwind respeta ambas cosas.
   Cálculos puros en `lib/qr.ts`.
 - El enlace sale de la dirección del sitio (`resolveSiteBaseUrl`) +
   `/menu`, con `?mesa=N` para las mesas.
+
+## Métricas
+
+- Tabla `metric_counts` (día en hora de México + métrica + clave +
+  conteo), sin políticas de RLS: solo `service_role`. La función
+  `increment_metric` suma 1 con `on conflict` (sin carreras).
+- Navegador → `track()` (`app/track.ts`, `sendBeacon`) → `POST
+  /api/metrics` → valida con `normalizeMetricKey` (`lib/metrics.ts`) →
+  `rpc("increment_metric")`. Ignora navegadores con cookie `sb-…-auth-token`.
+- Dónde se cuenta: `MenuView.tsx` (visita una vez por carga, con la mesa
+  de `?mesa=`; producto al abrir su detalle) y `TrackLinkClicks.tsx` en el
+  layout (enlaces con `data-track` en la portada).
+- `/admin/metricas` lee por páginas de 1000 (límite de Supabase) y
+  resume con `summarizeMetrics`.

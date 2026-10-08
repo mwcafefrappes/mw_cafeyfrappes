@@ -4,10 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { business } from "@/lib/config/business";
-import { describeNextOpening, filterMenu, getNextOpening, type TemperatureFilter } from "@/lib/menu";
+import { describeNextOpening, filterMenu, getNextOpening, parseTableNumber, type TemperatureFilter } from "@/lib/menu";
 import type { TimeFormat } from "@/lib/time-format";
 import { isOpenAt, type WeeklyHour } from "@/lib/weekly-hours";
 import { rememberTable, setSearchParam, useMinuteClock, useSearchParam, useTableNumber } from "./client-state";
+import { track } from "../track";
 import { ProductPhoto, TagList } from "./ProductBits";
 import { ProductSheet } from "./ProductSheet";
 import type { MenuCategoryView, MenuProductView } from "./types";
@@ -35,6 +36,16 @@ export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewP
     if (table !== null) rememberTable(table);
   }, [table]);
 
+  // Métricas: una visita por carga del menú; la mesa solo si vino en el QR
+  // (`?mesa=` en la URL), no la recordada de antes.
+  const visitCounted = useRef(false);
+  useEffect(() => {
+    if (visitCounted.current) return;
+    visitCounted.current = true;
+    const scanned = parseTableNumber(new URLSearchParams(window.location.search).get("mesa"));
+    track("menu_view", scanned === null ? "" : String(scanned));
+  }, []);
+
   const [query, setQuery] = useState("");
   const [temperature, setTemperature] = useState<TemperatureFilter | null>(null);
   const visible = useMemo(() => filterMenu(categories, { query, temperature }), [categories, query, temperature]);
@@ -45,6 +56,14 @@ export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewP
     () => (productSlug ? (categories.flatMap((c) => c.products).find((p) => p.slug === productSlug) ?? null) : null),
     [categories, productSlug]
   );
+  // Métricas: cada vez que se abre el detalle de un producto.
+  const selectedId = selected?.id ?? null;
+  const lastCountedProduct = useRef<string | null>(null);
+  useEffect(() => {
+    if (selectedId !== null && lastCountedProduct.current !== selectedId) track("product_view", selectedId);
+    lastCountedProduct.current = selectedId;
+  }, [selectedId]);
+
   // true si el producto se abrió desde aquí (con una entrada nueva en el
   // historial); false si llegó en un link compartido.
   const openedHere = useRef(false);

@@ -1,4 +1,3 @@
-
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
@@ -113,6 +112,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"metric_counts": {
+                  Row: {
+                    "count": number,"day": string,"key": string,"metric": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "count"?: number,"day": string,"key"?: string,"metric": string
+                  }
+                  Update: {
+                    "count"?: number,"day"?: string,"key"?: string,"metric"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"product_extra_groups": {
                   Row: {
                     "group_id": string,"product_id": string,"sort_order": number
@@ -185,7 +198,9 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "increment_metric":
+{ Args: { "p_key": string,"p_metric": string }; Returns: undefined
+                           }
           }
           Enums: {
             [_ in never]: never

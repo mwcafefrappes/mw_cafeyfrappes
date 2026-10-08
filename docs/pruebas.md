@@ -19,6 +19,7 @@ pnpm build
 | `lib/item-price.test.ts` | Precio de un producto con tamaño y extras, agotado, extras ajenos o repetidos, mínimo y máximo por grupo |
 | `lib/landing-content.test.ts` | Textos de la landing: lo guardado manda, vacío cae al valor por defecto; links de Google/Apple Maps |
 | `lib/admin/menu-form.test.ts` | Formularios de `/admin/menu`: precio en centavos, tamaños (vacíos, repetidos, precio inválido), frío y caliente a la vez, mínimo/máximo de extras, slugs, mover arriba/abajo |
+| `lib/metrics.test.ts` | `/admin/metricas`: métricas y claves válidas (mesa 1–99, id de producto, 4 enlaces), periodo de 7/30/90 días, "hoy" en hora de México, suma por día, mesa, producto y enlace dentro del periodo |
 | `lib/qr.test.ts` | `/admin/qr`: enlace con `?mesa=N` o sin mesa, hueco del logo (impar, dentro de lo que la corrección recupera, sin tocar las esquinas), contraste y avisos de color, nombres de archivo, usuario de Instagram |
 | `lib/admin/landing-form.test.ts` | `/admin/landing`: espacios y renglones, vacío o igual al original = `null`, sección desconocida, largos máximos, qué secciones llevan foto |
 | `lib/admin/business-form.test.ts` | `/admin/negocio` y `/admin/horario`: días y horas (solo días abiertos, segundos del navegador, cierre después de medianoche, misma hora rechazada, todos cerrados), formato de hora, número de mesas (1 a 99); WhatsApp a 52 + 10 dígitos, dígito verificador de la CLABE, domicilio y tarjeta solo con Stripe, al menos un método por tipo, envío en centavos, rangos de programados, matriz de pagos guardada (`lib/payment-methods.ts`) |
@@ -142,3 +143,23 @@ Verificado 2026-10-08 (los QR se decodificaron con jsQR en el navegador):
 - Con la dirección del sitio en localhost sale el aviso "solo funciona en
   esta computadora".
 - En celular (375 px) la vista previa va primero, sin scroll de lado.
+
+## Métricas (manual, contra Supabase local)
+
+Verificado 2026-10-08:
+- Abrir `/menu?mesa=3` y luego Frappé moka → el servidor recibe
+  exactamente una visita al menú y una apertura de producto (sin
+  duplicados en desarrollo).
+- Clic en WhatsApp y en "Cómo llegar" de la portada → un conteo cada uno.
+- Desde un navegador que entró al panel → no se suma nada.
+- `curl` sin cookies: `menu_view` mesa 3 (×2) y sin mesa, `product_view`
+  (×2), `whatsapp`, `maps` → se suman en el día de hoy (hora de México).
+  Mesa 500, métrica inventada, cuerpo que no es JSON, producto por slug
+  y con cookie `sb-…-auth-token` → se ignoran (respuesta 204 igual).
+- `/admin/metricas` con 20 días de ejemplo: totales, gráfica por día,
+  más vistos, mesas y clics correctos en 7 y 30 días; en celular sin
+  scroll de lado. Al final se vació `metric_counts`.
+
+```bash
+curl -i -X POST -d '{"m":"menu_view","k":"3"}' localhost:3000/api/metrics   # 204
+```

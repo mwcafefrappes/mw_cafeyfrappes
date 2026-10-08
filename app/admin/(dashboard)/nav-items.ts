@@ -1,8 +1,8 @@
-import { ClockIcon, CupIcon, HomeIcon, LayoutIcon, QrIcon, StoreIcon } from "./Icons";
+import { ChartBarIcon, ClockIcon, CupIcon, HomeIcon, LayoutIcon, QrIcon, StoreIcon } from "./Icons";
 
 /**
  * Secciones del panel, en el orden del nav. Se agregan conforme avanza el
- * roadmap: Métricas (Fase 4), Pedidos
+ * roadmap: Pedidos
  * (Fase 5), Instagram (Fase 7).
  */
 export const ADMIN_NAV_ITEMS = [
@@ -12,4 +12,5 @@ export const ADMIN_NAV_ITEMS = [
   { href: "/admin/horario", label: "Horario", Icon: ClockIcon },
   { href: "/admin/landing", label: "Portada", Icon: LayoutIcon },
   { href: "/admin/qr", label: "QR", Icon: QrIcon },
+  { href: "/admin/metricas", label: "Métricas", Icon: ChartBarIcon },
 ];

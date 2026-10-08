@@ -122,6 +122,7 @@ export default async function HomePage() {
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
+                data-track="whatsapp"
                 className="inline-flex items-center gap-2 rounded-full border border-[#fff7ec]/50 px-6 py-3 text-sm font-semibold transition-colors hover:bg-white/10"
               >
                 WhatsApp
@@ -260,10 +261,10 @@ export default async function HomePage() {
                 />
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                <a href={googleMapsDirectionsUrl(settings.business_lat!, settings.business_lng!)} className={primaryButton}>
+                <a href={googleMapsDirectionsUrl(settings.business_lat!, settings.business_lng!)} data-track="maps" className={primaryButton}>
                   Cómo llegar
                 </a>
-                <a href={appleMapsUrl(settings.business_lat!, settings.business_lng!, business.name)} className={secondaryButton}>
+                <a href={appleMapsUrl(settings.business_lat!, settings.business_lng!, business.name)} data-track="maps" className={secondaryButton}>
                   Apple Maps
                 </a>
               </div>
@@ -283,6 +284,7 @@ export default async function HomePage() {
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
+                data-track="whatsapp"
                 className="inline-flex items-center rounded-full bg-brand-on-primary px-5 py-2.5 text-sm font-semibold text-brand-primary transition-opacity hover:opacity-90"
               >
                 WhatsApp
@@ -291,6 +293,7 @@ export default async function HomePage() {
             {settings.social_instagram_url && (
               <a
                 href={settings.social_instagram_url}
+                data-track="instagram"
                 className="inline-flex items-center rounded-full border border-current px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80"
               >
                 Instagram
@@ -299,6 +302,7 @@ export default async function HomePage() {
             {settings.social_facebook_url && (
               <a
                 href={settings.social_facebook_url}
+                data-track="facebook"
                 className="inline-flex items-center rounded-full border border-current px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80"
               >
                 Facebook
