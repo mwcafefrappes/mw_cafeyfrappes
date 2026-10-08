@@ -114,3 +114,26 @@ export async function getExtraGroupsAdmin(): Promise<ExtraGroupAdmin[]> {
     productCount: product_extra_groups.length,
   }));
 }
+
+export type LandingSectionRow = Tables<"landing_sections">;
+
+export interface LandingAdmin {
+  /** Lo guardado tal cual (sin los textos por defecto) para saber qué cambió Franco. */
+  rows: Map<string, LandingSectionRow>;
+  /** Productos visibles marcados "en portada". */
+  featuredNames: string[];
+}
+
+export async function getLandingAdmin(): Promise<LandingAdmin> {
+  const supabase = getServiceSupabase();
+  const [sections, featured] = await Promise.all([
+    supabase.from("landing_sections").select("*"),
+    supabase.from("products").select("name, sort_order, categories!inner(sort_order, active)").eq("show_on_landing", true).eq("active", true).eq("categories.active", true),
+  ]);
+  if (sections.error) throw sections.error;
+  if (featured.error) throw featured.error;
+  const featuredNames = featured.data
+    .sort((a, b) => a.categories.sort_order - b.categories.sort_order || a.sort_order - b.sort_order)
+    .map((product) => product.name);
+  return { rows: new Map(sections.data.map((row) => [row.key, row])), featuredNames };
+}

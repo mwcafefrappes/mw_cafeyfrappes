@@ -9,6 +9,9 @@
  * están pendientes de que Franco los revise.
  */
 
+/** Máximo de favoritos en la portada (en el orden del menú); el resto se ve en /menu. */
+export const MAX_FEATURED_PRODUCTS = 6;
+
 export const LANDING_SECTION_KEYS = ["hero", "destacados", "nosotros", "horario", "ubicacion", "contacto"] as const;
 export type LandingSectionKey = (typeof LANDING_SECTION_KEYS)[number];
 
@@ -23,7 +26,7 @@ export interface LandingSectionDefault {
 
 export const DEFAULT_LANDING_SECTIONS: Record<LandingSectionKey, LandingSectionDefault> = {
   hero: {
-    label: "Portada",
+    label: "Encabezado",
     heading: "Café, frappés y waffles",
     subheading: "Café de grano, frappés bien fríos, crepas, sodas italianas y los waffles de siempre, en Sector K, Huatulco.",
     imagePath: "/sample/local-terraza.jpg",

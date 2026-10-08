@@ -111,3 +111,14 @@ La variante `dark:` de Tailwind respeta ambas cosas.
 - Horario: secciones `dias` (`weekly_hours`, un `{day, start, end}` por
   día abierto; `end < start` = cierra después de medianoche) y `formato`
   (`time_format`). Lo leen `lib/weekly-hours.ts` y `lib/time-format.ts`.
+
+## `/admin/landing` ("Portada")
+
+- `lib/admin/landing-actions.ts`: `saveLandingTextAction` (upsert en
+  `landing_sections` por `key`), `uploadLandingImageAction` y
+  `removeLandingImageAction` (bucket `site-assets`, `landing-<key>-<ts>.jpg`;
+  borra la anterior; las de `/sample` no se tocan). Regenera `/`.
+- Validación en `lib/admin/landing-form.ts`; `null` = texto/foto por
+  defecto de `lib/landing-content.ts` (`resolveLandingSections`).
+- `MAX_FEATURED_PRODUCTS` (6) vive en `lib/landing-content.ts`; lo usan
+  la portada y el panel.

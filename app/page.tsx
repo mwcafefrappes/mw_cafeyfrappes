@@ -7,7 +7,7 @@ import { getMenuPhotoUrl, getSiteAssetUrl } from "@/lib/storage";
 import { productPriceLabel } from "@/lib/money";
 import { parseTimeFormat } from "@/lib/time-format";
 import { parseWeeklyHours, summarizeWeeklyHours } from "@/lib/weekly-hours";
-import { appleMapsUrl, googleMapsDirectionsUrl, googleMapsEmbedUrl } from "@/lib/landing-content";
+import { appleMapsUrl, googleMapsDirectionsUrl, googleMapsEmbedUrl, MAX_FEATURED_PRODUCTS } from "@/lib/landing-content";
 import { buildLocalBusinessJsonLd, jsonLdScript, resolveSiteBaseUrl } from "@/lib/seo";
 import { AdminGestureListener } from "./AdminGestureListener";
 import { CopyButton } from "./CopyButton";
@@ -21,9 +21,6 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 60;
-
-/** Máximo de favoritos en la portada; el resto se ve en /menu. */
-const MAX_FEATURED = 6;
 
 const primaryButton =
   "inline-flex items-center justify-center gap-2 rounded-full bg-brand-primary px-5 py-2.5 text-sm font-semibold text-brand-on-primary transition-opacity hover:opacity-90";
@@ -44,7 +41,7 @@ export default async function HomePage() {
   const featured = menu
     .flatMap((category) => category.products)
     .filter((product) => product.show_on_landing)
-    .slice(0, MAX_FEATURED);
+    .slice(0, MAX_FEATURED_PRODUCTS);
   const siteUrl = resolveSiteBaseUrl(settings);
   const whatsappUrl = settings.business_whatsapp ? `https://wa.me/${settings.business_whatsapp}` : null;
   const hasCoords = settings.business_lat !== null && settings.business_lng !== null;

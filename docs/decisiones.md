@@ -160,3 +160,18 @@ https://claude.ai/artifact/5ze7M1jtJog4Cdfih3PDRy
   la web y otro para WhatsApp; aquí no hay bot).
 - Pendiente de confirmar: cierres por fecha (días festivos, vacaciones
   con fecha de regreso, "hoy no abrimos").
+
+## 2026-10-08 — `/admin/landing` (Fase 4)
+
+- **En el panel se llama "Portada"** (no "Landing", que es jerga); la
+  primera sección se llama "Encabezado".
+- **Solo textos y fotos**; el diseño y el orden de las secciones siguen
+  fijos. Llevan foto el encabezado y "Quiénes somos" (las demás no la
+  usan en el diseño).
+- **Borrar un texto, o dejarlo igual al original, guarda "original"**:
+  si después se mejora el texto por defecto, la portada lo toma sola.
+- **Favoritos: máximo 6, en el orden del menú.** Se eligen en Menú; la
+  página de Portada solo muestra cuáles salen y avisa si sobran.
+- Fotos de portada a 2000 px JPG (se ve a lo ancho en computadora).
+- Pendiente: video (reel) en el encabezado, si Franco lo quiere.
+
