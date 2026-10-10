@@ -3,6 +3,7 @@
  * agotado). Cada página llama antes a `requireAdminUser()`.
  */
 
+import { PAYMENT_PROOFS_BUCKET } from "../storage";
 import { getServiceSupabase } from "../supabase";
 import type { Tables } from "../database.types";
 
@@ -166,4 +167,41 @@ export async function getMetricsAdmin(sinceDay: string): Promise<MetricsAdmin> {
   const { data: products, error } = await supabase.from("products").select("id, name");
   if (error) throw error;
   return { rows, productNames: new Map(products.map((p) => [p.id, p.name])) };
+}
+
+export type AdminOrder = Tables<"orders"> & {
+  order_items: Tables<"order_items">[];
+  /** URL firmada (1 h) del comprobante de transferencia, si hay. */
+  proofUrl: string | null;
+};
+
+/**
+ * Tablero de /admin/pedidos: todos los abiertos (de cualquier día) y los
+ * que se cerraron hoy (`todayStartIso` = medianoche de hoy en México),
+ * aunque fueran programados para otro día.
+ */
+export async function getOrdersBoardAdmin(todayStartIso: string): Promise<AdminOrder[]> {
+  const supabase = getServiceSupabase();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*, order_items(*)")
+    .eq("on_board", true)
+    .or(`status.in.(received,preparing,ready),updated_at.gte.${todayStartIso}`)
+    .order("created_at", { ascending: true })
+    .limit(300);
+  if (error) throw error;
+
+  const proofPaths = data.map((o) => o.payment_proof_path).filter((p): p is string => Boolean(p));
+  const signed = new Map<string, string>();
+  if (proofPaths.length > 0) {
+    const { data: urls, error: signError } = await supabase.storage.from(PAYMENT_PROOFS_BUCKET).createSignedUrls(proofPaths, 3600);
+    if (signError) throw signError;
+    for (const url of urls) if (url.path && url.signedUrl) signed.set(url.path, url.signedUrl);
+  }
+
+  return data.map((order) => ({
+    ...order,
+    order_items: [...order.order_items].sort((a, b) => a.sort_order - b.sort_order),
+    proofUrl: order.payment_proof_path ? (signed.get(order.payment_proof_path) ?? null) : null,
+  }));
 }

@@ -3,19 +3,36 @@
 import { useEffect, useRef, useState } from "react";
 import { computeItemPrice, extraGroupHint, type PricedExtraGroup } from "@/lib/item-price";
 import { formatMXN } from "@/lib/money";
+import { MAX_ITEM_NOTE, MAX_QUANTITY } from "@/lib/orders";
+import { addToCart } from "../cart-store";
+import { ModelViewer3D } from "../ModelViewer3D";
 import { ProductPhoto, TagList } from "./ProductBits";
 import type { MenuProductView } from "./types";
 
 /**
  * Detalle de un producto: hoja que sube desde abajo en el celular y
  * ventana centrada en pantallas grandes (`<dialog>` nativo: Esc, foco y
- * fondo inerte gratis). El cliente elige tamaño y extras y ve el total;
- * el botón de agregar al pedido llega en la Fase 5.
+ * fondo inerte gratis). El cliente elige tamaño, extras, cantidad y una
+ * nota, y lo agrega a su pedido (`cart-store.ts`).
  */
-export function ProductSheet({ product, onClose }: { product: MenuProductView; onClose: () => void }) {
+export function ProductSheet({
+  product,
+  canOrder,
+  onClose,
+  onAdded,
+}: {
+  product: MenuProductView;
+  /** `false` si el negocio no está tomando pedidos (recoger y mesa apagados). */
+  canOrder: boolean;
+  onClose: () => void;
+  onAdded: (message: string) => void;
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [sizeId, setSizeId] = useState<string | null>(product.product_sizes[0]?.id ?? null);
   const [extraIds, setExtraIds] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState(1);
+  const [note, setNote] = useState("");
+  const [show3d, setShow3d] = useState(false);
   const soldOut = !product.is_available;
 
   useEffect(() => {
@@ -42,6 +59,13 @@ export function ProductSheet({ product, onClose }: { product: MenuProductView; o
   const result = computeItemPrice(product, { sizeId, extraIds });
   const missingGroup = !result.ok && result.reason === "group_min" ? result.groupName : null;
 
+  const add = () => {
+    if (!result.ok) return;
+    const added = addToCart({ productId: product.id, sizeId, extraIds, quantity, note: note.trim() });
+    onAdded(added ? `${quantity > 1 ? `${quantity} × ` : ""}${product.name} en tu pedido.` : "Tu pedido ya tiene demasiados productos distintos.");
+    dialogRef.current?.close();
+  };
+
   return (
     <dialog
       ref={dialogRef}
@@ -56,7 +80,24 @@ export function ProductSheet({ product, onClose }: { product: MenuProductView; o
       <div className="flex max-h-[inherit] flex-col">
         <div className="overflow-y-auto overscroll-contain">
           <div className="relative">
-            <ProductPhoto product={product} className={`aspect-[4/3] w-full ${soldOut ? "opacity-60 grayscale" : ""}`} sizes="(min-width: 640px) 512px, 100vw" />
+            {show3d && product.modelUrl ? (
+              <ModelViewer3D src={product.modelUrl} iosSrc={product.modelIosUrl} poster={product.photoUrl} alt={`${product.name} en 3D`} className="aspect-[4/3] w-full" />
+            ) : (
+              <ProductPhoto product={product} className={`aspect-[4/3] w-full ${soldOut ? "opacity-60 grayscale" : ""}`} sizes="(min-width: 640px) 512px, 100vw" />
+            )}
+            {product.modelUrl && (
+              <button
+                type="button"
+                onClick={() => setShow3d((value) => !value)}
+                aria-pressed={show3d}
+                className="absolute left-3 top-3 flex cursor-pointer items-center gap-1.5 rounded-full bg-brand-cream/90 px-3 py-1.5 text-sm font-semibold text-brand-ink shadow-sm"
+              >
+                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
+                  <path d="M10 2.5 3.5 6v8L10 17.5 16.5 14V6L10 2.5Z M3.5 6 10 9.5 16.5 6 M10 9.5v8" strokeLinejoin="round" />
+                </svg>
+                {show3d ? "Ver foto" : "Ver en 3D"}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => dialogRef.current?.close()}
@@ -149,19 +190,64 @@ export function ProductSheet({ product, onClose }: { product: MenuProductView; o
                   </fieldset>
                 );
               })}
+
+            {!soldOut && canOrder && (
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">
+                Nota para este producto <span className="sr-only">(opcional)</span>
+                <input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  maxLength={MAX_ITEM_NOTE}
+                  placeholder="Opcional, ej. poco hielo"
+                  className="w-full rounded-[12px] border border-brand-border bg-brand-sand px-3 py-2 text-base font-normal placeholder:text-brand-stone focus:border-brand-accent focus:outline-none sm:text-sm"
+                />
+              </label>
+            )}
           </div>
         </div>
 
         <div className="border-t border-brand-border bg-brand-cream px-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-3">
           {soldOut ? (
             <p className="py-2 text-center text-sm font-semibold text-brand-ink/70">Agotado por ahora</p>
-          ) : (
+          ) : !canOrder ? (
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs text-brand-ink/65">{missingGroup ? `Falta elegir: ${missingGroup}` : "Total"}</p>
-                <p className="text-xl font-bold tabular-nums">{formatMXN(sizePrice + extrasPrice)}</p>
+              <p className="text-xl font-bold tabular-nums">{formatMXN(sizePrice + extrasPrice)}</p>
+              <p className="max-w-[12rem] text-right text-xs text-brand-ink/65">Por ahora no estamos tomando pedidos en línea.</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center rounded-full border border-brand-border">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  disabled={quantity <= 1}
+                  aria-label="Uno menos"
+                  className="h-11 w-11 cursor-pointer text-lg disabled:opacity-35"
+                >
+                  −
+                </button>
+                <span className="w-6 text-center font-semibold tabular-nums" aria-label="Cantidad">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
+                  disabled={quantity >= MAX_QUANTITY}
+                  aria-label="Uno más"
+                  className="h-11 w-11 cursor-pointer text-lg disabled:opacity-35"
+                >
+                  +
+                </button>
               </div>
-              <p className="max-w-[12rem] text-right text-xs text-brand-ink/65">Muy pronto vas a poder pedir desde aquí.</p>
+              <button
+                type="button"
+                onClick={add}
+                disabled={!result.ok}
+                className="flex min-h-11 flex-1 cursor-pointer items-center justify-between gap-2 rounded-full bg-brand-primary px-5 text-sm font-semibold text-brand-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span>{missingGroup ? `Elige: ${missingGroup}` : "Agregar"}</span>
+                <span className="tabular-nums">{formatMXN((sizePrice + extrasPrice) * quantity)}</span>
+              </button>
             </div>
           )}
         </div>

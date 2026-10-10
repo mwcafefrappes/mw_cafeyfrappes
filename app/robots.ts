@@ -9,7 +9,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   const siteUrl = resolveSiteBaseUrl(settings);
 
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/pedido/"] },
+    rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/pedido/", "/mis-pedidos"] },
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,
   };

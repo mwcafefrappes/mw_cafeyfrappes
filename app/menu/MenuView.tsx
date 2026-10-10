@@ -9,7 +9,9 @@ import type { TimeFormat } from "@/lib/time-format";
 import { isOpenAt, type WeeklyHour } from "@/lib/weekly-hours";
 import { rememberTable, setSearchParam, useMinuteClock, useSearchParam, useTableNumber } from "./client-state";
 import { track } from "../track";
+import { InstallPrompt } from "../InstallPrompt";
 import { ProductPhoto, TagList } from "./ProductBits";
+import { CartBar, RecentOrderLink } from "./CartBar";
 import { ProductSheet } from "./ProductSheet";
 import type { MenuCategoryView, MenuProductView } from "./types";
 
@@ -18,6 +20,10 @@ interface MenuViewProps {
   hours: WeeklyHour[];
   timeFormat: TimeFormat;
   serverNow: number;
+  /** El negocio toma pedidos en línea (recoger o mesa activos). */
+  canOrder: boolean;
+  /** Logo subido en /admin (para la guía de instalar la app). */
+  iconUrl: string | null;
 }
 
 const TEMPERATURE_OPTIONS: { value: TemperatureFilter | null; label: string }[] = [
@@ -26,7 +32,7 @@ const TEMPERATURE_OPTIONS: { value: TemperatureFilter | null; label: string }[] 
   { value: "caliente", label: "Caliente" },
 ];
 
-export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewProps) {
+export function MenuView({ categories, hours, timeFormat, serverNow, canOrder, iconUrl }: MenuViewProps) {
   const now = useMinuteClock(serverNow);
   const open = isOpenAt(hours, new Date(now));
   const nextOpening = open ? null : getNextOpening(hours, new Date(now));
@@ -83,6 +89,14 @@ export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewP
 
   const activeSlug = useActiveCategory(visible.map((c) => c.slug));
 
+  const products = useMemo(() => new Map(categories.flatMap((c) => c.products).map((p) => [p.id, p])), [categories]);
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   return (
     <main className="flex flex-1 flex-col bg-brand-cream text-brand-ink">
       <header className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top,0px))] sm:px-6">
@@ -107,8 +121,16 @@ export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewP
         </div>
       </header>
 
+      <div className="mx-auto w-full max-w-3xl px-4 empty:hidden sm:px-6">
+        <RecentOrderLink now={now} />
+      </div>
+
+      <div className="mx-auto mt-3 w-full max-w-3xl px-4 empty:hidden sm:px-6">
+        <InstallPrompt place="menu" iconUrl={iconUrl} />
+      </div>
+
       {!open && (
-        <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+        <div className="mx-auto mt-3 w-full max-w-3xl px-4 sm:px-6">
           <p role="status" className="rounded-[14px] bg-brand-accent-wash px-4 py-3 text-sm">
             <span className="font-semibold">Ahorita estamos cerrados.</span>{" "}
             {nextOpening ? `${endSentence(`Abrimos ${describeNextOpening(nextOpening, timeFormat)}`)} ` : ""}
@@ -189,7 +211,7 @@ export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewP
       </div>
 
       <footer className="border-t border-brand-border">
-        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-5 text-xs text-brand-ink/70 sm:px-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pt-5 text-xs text-brand-ink/70 sm:px-6">
           <p>Precios en pesos mexicanos.</p>
           <Link href="/" className="underline underline-offset-4">
             Inicio
@@ -197,7 +219,16 @@ export function MenuView({ categories, hours, timeFormat, serverNow }: MenuViewP
         </div>
       </footer>
 
-      {selected && <ProductSheet key={selected.id} product={selected} onClose={closeProduct} />}
+      {selected && <ProductSheet key={selected.id} product={selected} canOrder={canOrder} onClose={closeProduct} onAdded={setToast} />}
+      {canOrder && <CartBar products={products} />}
+      {toast && (
+        <p
+          role="status"
+          className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 mx-auto max-w-sm rounded-full bg-brand-ink px-4 py-2.5 text-center text-sm font-medium text-brand-cream shadow-lg"
+        >
+          {toast}
+        </p>
+      )}
     </main>
   );
 }

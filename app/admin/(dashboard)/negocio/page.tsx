@@ -76,7 +76,7 @@ export default async function AdminBusinessPage() {
             </div>
           )}
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <MoneyField name="delivery_min_subtotal" label="Pedido mínimo a domicilio" cents={settings.delivery_min_subtotal_cents} />
           <MoneyField name="delivery_fee" label="Costo de envío" cents={settings.delivery_fee_cents} />
           <label className={labelClass}>
@@ -86,10 +86,28 @@ export default async function AdminBusinessPage() {
               <option value="manual">Manual: lo fijo en cada pedido</option>
             </select>
           </label>
+          <label className={labelClass}>
+            Zona de entrega (km alrededor del local)
+            <input
+              name="delivery_radius_km"
+              type="number"
+              inputMode="decimal"
+              min={0.1}
+              max={50}
+              step={0.1}
+              required
+              defaultValue={settings.delivery_radius_m / 1000}
+              className={inputClass}
+            />
+          </label>
         </div>
         <p className={hintClass}>
-          En manual, el pedido llega sin envío y tú lo pones al recibirlo; el cliente ve el total actualizado.
+          En manual, el pedido llega sin envío y tú lo pones al recibirlo; el cliente paga cuando ya ve el total. La zona se mide en
+          línea recta desde la ubicación del local (latitud y longitud en &quot;Ubicación&quot;).
         </p>
+        {(settings.business_lat === null || settings.business_lng === null) && (
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">Falta la ubicación del local: sin ella no se pueden recibir pedidos a domicilio.</p>
+        )}
       </Section>
 
       <Section id="pagos" title="Métodos de pago">
@@ -164,6 +182,21 @@ export default async function AdminBusinessPage() {
               <input name="transfer_holder" defaultValue={settings.transfer_holder ?? ""} className={inputClass} />
             </label>
           </div>
+          <label className={`${labelClass} mt-4 sm:max-w-xs`}>
+            Guardar las capturas de comprobantes (días)
+            <input
+              name="proof_retention_days"
+              type="number"
+              inputMode="numeric"
+              min={7}
+              max={3650}
+              step={1}
+              required
+              defaultValue={settings.proof_retention_days}
+              className={inputClass}
+            />
+          </label>
+          <p className={hintClass}>Después se borran solas; el pedido se queda en el historial.</p>
         </div>
       </Section>
 

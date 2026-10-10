@@ -63,8 +63,15 @@ pnpm exec supabase db push
 ```
 
 Hacerlo **antes o junto** con el push del código que la usa. Ejemplo:
-`20261008000000_table_count.sql` (número de mesas de `/admin/qr`, ya
-aplicada el 2026-10-08) y `20261009000000_metric_counts.sql` (métricas).
+`20261008000000_table_count.sql` y `20261009000000_metric_counts.sql`
+(ya aplicadas el 2026-10-08), `20261010000000_orders.sql` (pedidos,
+bucket privado `payment-proofs` y Realtime de `orders`; aplicada el
+2026-10-09), `20261011000000_delivery.sql` (domicilio: radio, dirección y
+punto del pedido, pedidos con tarjeta fuera del tablero hasta pagarse;
+aplicada el 2026-10-09), `20261012000000_stripe.sql` (sesión y pago de
+Stripe del pedido, plazo para pagar; aplicada el 2026-10-09) y
+`20261013000000_proof_retention.sql` (días que se guardan los
+comprobantes; aplicada el 2026-10-09).
 
 ### Repos
 
@@ -94,12 +101,42 @@ volver a correr `git push` cuando se arregle.
 | `SUPABASE_SERVICE_ROLE_KEY` | Igual (service_role / secret). Nunca en el navegador |
 | `APP_BASE_URL` | `https://<proyecto>.vercel.app`. Si falta, se usa el dominio de producción de Vercel (`VERCEL_PROJECT_PRODUCTION_URL`, requiere "System Environment Variables" activado); sin ninguno de los dos, el build falla al generar `/` |
 | `CRON_SECRET` | Texto aleatorio largo (`openssl rand -hex 24`) |
-| `STRIPE_SECRET_KEY` | Fase 6. Mientras no exista, `/admin/negocio` no deja activar domicilio ni tarjeta |
+| `STRIPE_SECRET_KEY` | Stripe → Developers → API keys → Secret key (`sk_test_…` para pruebas, `sk_live_…` en producción). Mientras no exista, `/admin/negocio` no deja activar domicilio ni tarjeta |
+| `STRIPE_WEBHOOK_SECRET` | Stripe → Developers → Webhooks → el endpoint de abajo → Signing secret (`whsec_…`). Sin ella, ningún pago con tarjeta se confirma |
+| `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN` | Cuenta de Google del negocio (P1): un refresh token con `calendar` y `gmail.send`, igual que Axel. Sin ellas, los avisos de pedidos solo quedan en el log |
+| `OWNER_NOTIFY_EMAIL` | Correo que recibe los avisos de pedidos (el mismo de la cuenta de Google) |
+| `GOOGLE_CALENDAR_ID` | Opcional; `primary` por defecto |
 
 4. Activar **Analytics** en el proyecto de Vercel (se hace desde el
    dashboard, no desde el código).
 5. El cron diario (`vercel.json` → `/api/cron/daily`) se registra solo
    al desplegar.
+
+### Stripe (Fase 6)
+
+1. Cuenta de Stripe a nombre de Franco (P9). Empezar en **modo de
+   prueba**: las llaves `sk_test_…` no cobran de verdad.
+2. Developers → Webhooks → **Add endpoint**:
+   `https://<dominio>/api/stripe/webhook`, con los eventos
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`
+   y `checkout.session.expired`. Copiar el *Signing secret*.
+3. En Vercel: `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET`, y volver a
+   desplegar.
+4. Settings → Payment methods: dejar tarjeta, Google Pay y Apple Pay
+   activos (Checkout los muestra solo en dispositivos compatibles).
+5. Probar con la tarjeta de prueba `4242 4242 4242 4242` (cualquier fecha
+   futura y CVC). En `/admin/negocio` ya se puede activar domicilio y
+   tarjeta.
+6. Para pasar a cobros reales: repetir 2 y 3 en modo *live* (otro
+   endpoint y otras llaves).
+
+En local, con la CLI de Stripe:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+(da un `whsec_…` temporal para `.env.local`).
 
 ### 3. Después del primer deploy
 

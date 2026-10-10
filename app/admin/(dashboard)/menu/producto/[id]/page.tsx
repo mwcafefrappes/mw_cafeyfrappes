@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { requireAdminUser } from "@/lib/admin/auth";
 import { getCategoriesAdmin, getExtraGroupsAdmin, getProductAdmin } from "@/lib/admin/data";
 import { deleteProductAction } from "@/lib/admin/menu-actions";
-import { getMenuPhotoUrl } from "@/lib/storage";
+import { env } from "@/lib/config/business";
+import { getMenuModelUrl, getMenuPhotoUrl } from "@/lib/storage";
 import { ConfirmSubmit } from "../../../ConfirmSubmit";
 import { cardClass, dangerLinkClass } from "../../../ui";
+import { ModelUploader } from "../ModelUploader";
 import { PhotoUploader } from "../PhotoUploader";
 import { ProductForm } from "../ProductForm";
 
@@ -45,6 +47,19 @@ export default async function EditProductPage({ params }: PageProps<"/admin/menu
       <section className={cardClass}>
         <h3 className="mb-3 text-sm font-semibold">Foto</h3>
         <PhotoUploader productId={product.id} productName={product.name} photoUrl={getMenuPhotoUrl(product.photo_path)} />
+      </section>
+
+      <section className={cardClass}>
+        <h3 className="mb-3 text-sm font-semibold">Vista 3D</h3>
+        <ModelUploader
+          productId={product.id}
+          productName={product.name}
+          glbUrl={getMenuModelUrl(product.model_glb_path)}
+          usdzUrl={getMenuModelUrl(product.model_usdz_path)}
+          posterUrl={getMenuPhotoUrl(product.photo_path)}
+          supabaseUrl={env.supabaseUrl}
+          supabaseAnonKey={env.supabaseAnonKey}
+        />
       </section>
 
       <ProductForm product={product} categories={categories} extraGroups={extraGroups} defaultCategoryId={null} />

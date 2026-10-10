@@ -16,6 +16,8 @@ import { env } from "./config/business";
 export const MENU_PHOTOS_BUCKET = "menu-photos";
 export const MENU_MODELS_BUCKET = "menu-models";
 export const SITE_ASSETS_BUCKET = "site-assets";
+/** Privado: comprobantes de transferencia. Solo el servidor sube; el panel los ve con URLs firmadas. */
+export const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
 /** `cacheControl` para `.upload()`: 1 año, seguro porque cada subida tiene una ruta nueva. */
 export const LONG_CACHE_CONTROL = "31536000";

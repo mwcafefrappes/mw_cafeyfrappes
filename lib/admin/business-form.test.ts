@@ -80,7 +80,7 @@ describe("parseLocationSection", () => {
 });
 
 describe("parseOrdersSection", () => {
-  const base = { order_pickup_enabled: "on", delivery_min_subtotal: "80", delivery_fee: "40", delivery_fee_mode: "auto" };
+  const base = { order_pickup_enabled: "on", delivery_min_subtotal: "80", delivery_fee: "40", delivery_fee_mode: "auto", delivery_radius_km: "5" };
 
   it("pesos a centavos", () => {
     expect(parseOrdersSection(form(base), false)).toMatchObject({
@@ -98,11 +98,27 @@ describe("parseOrdersSection", () => {
     expect(parseOrdersSection(form({ ...base, delivery_fee_mode: "manual" }), false)).toMatchObject({ value: { delivery_fee_mode: "manual" } });
     expect(parseOrdersSection(form({ ...base, delivery_fee_mode: "gratis" }), false)).toMatchObject({ ok: false });
   });
+
+  it("zona de entrega en km (se guarda en metros)", () => {
+    expect(parseOrdersSection(form(base), false)).toMatchObject({ value: { delivery_radius_m: 5000 } });
+    expect(parseOrdersSection(form({ ...base, delivery_radius_km: "3,5" }), false)).toMatchObject({ value: { delivery_radius_m: 3500 } });
+    expect(parseOrdersSection(form({ ...base, delivery_radius_km: "0" }), false)).toMatchObject({ ok: false });
+    expect(parseOrdersSection(form({ ...base, delivery_radius_km: "80" }), false)).toMatchObject({ ok: false });
+    expect(parseOrdersSection(form({ ...base, delivery_radius_km: "" }), false)).toMatchObject({ ok: false });
+  });
 });
 
 describe("parsePaymentsSection", () => {
+  it("días para guardar comprobantes", () => {
+    expect(parsePaymentsSection(form({ proof_retention_days: "120", pay_pickup: ["cash"], pay_table: ["cash"] }), false)).toMatchObject({
+      ok: true,
+      value: { proof_retention_days: 120 },
+    });
+    expect(parsePaymentsSection(form({ proof_retention_days: "3", pay_pickup: ["cash"], pay_table: ["cash"] }), false)).toMatchObject({ ok: false });
+  });
+
   it("matriz: domicilio siempre solo tarjeta", () => {
-    const result = parsePaymentsSection(form({ pay_pickup: ["cash", "transfer"], pay_table: ["cash"] }), false);
+    const result = parsePaymentsSection(form({ proof_retention_days: "90", pay_pickup: ["cash", "transfer"], pay_table: ["cash"] }), false);
     expect(result).toMatchObject({
       ok: true,
       value: { payment_methods: { pickup: ["cash", "transfer"], table: ["cash"], delivery: ["card"] } },
@@ -110,18 +126,18 @@ describe("parsePaymentsSection", () => {
   });
 
   it("tarjeta en mostrador solo con Stripe; al menos un método", () => {
-    expect(parsePaymentsSection(form({ pay_pickup: ["card"], pay_table: ["cash"] }), false)).toMatchObject({ ok: false });
-    expect(parsePaymentsSection(form({ pay_pickup: ["card"], pay_table: ["cash"] }), true)).toMatchObject({ ok: true });
-    expect(parsePaymentsSection(form({ pay_pickup: [], pay_table: ["cash"] }), true)).toMatchObject({ ok: false });
+    expect(parsePaymentsSection(form({ proof_retention_days: "90", pay_pickup: ["card"], pay_table: ["cash"] }), false)).toMatchObject({ ok: false });
+    expect(parsePaymentsSection(form({ proof_retention_days: "90", pay_pickup: ["card"], pay_table: ["cash"] }), true)).toMatchObject({ ok: true });
+    expect(parsePaymentsSection(form({ proof_retention_days: "90", pay_pickup: [], pay_table: ["cash"] }), true)).toMatchObject({ ok: false });
   });
 
   it("CLABE con espacios se limpia; inválida se rechaza", () => {
     const spaced = GOOD_CLABE.replace(/(\d{6})/g, "$1 ");
-    expect(parsePaymentsSection(form({ pay_pickup: ["cash"], pay_table: ["cash"], transfer_clabe: spaced }), false)).toMatchObject({
+    expect(parsePaymentsSection(form({ proof_retention_days: "90", pay_pickup: ["cash"], pay_table: ["cash"], transfer_clabe: spaced }), false)).toMatchObject({
       value: { transfer_clabe: GOOD_CLABE },
     });
     expect(
-      parsePaymentsSection(form({ pay_pickup: ["cash"], pay_table: ["cash"], transfer_clabe: "002010077777777772" }), false)
+      parsePaymentsSection(form({ proof_retention_days: "90", pay_pickup: ["cash"], pay_table: ["cash"], transfer_clabe: "002010077777777772" }), false)
     ).toMatchObject({ ok: false });
   });
 });

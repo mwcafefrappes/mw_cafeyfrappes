@@ -104,6 +104,9 @@ agotado, mínimo/máximo; se reutiliza en el servidor en la Fase 5) y
       `/admin/landing` (Fase 4)
 - [ ] Revisión de Franco de los textos por defecto
 - [ ] Video del reel en la portada (opcional; por definir con el usuario)
+- [x] App instalada (2026-10-09): abre en el menú; atajos "Menú" y "Mis
+      pedidos" (`/mis-pedidos`); aviso "Instalar" que se puede cerrar en
+      el menú y en la página del pedido (solo celular). `lib/time-ago.test.ts`
 
 **Pruebas:** `lib/landing-content.test.ts` (valores por defecto, links de mapas). 88 pasan.
 
@@ -149,38 +152,86 @@ la portada), `lib/qr.test.ts` (enlace por mesa, hueco del logo,
 contraste), número de mesas y `lib/metrics.test.ts` (validación de
 conteos, fechas en hora de México, resumen). 140 pasan.
 
-## Fase 5 — Pedidos (sin pago en línea) · pendiente
+## Fase 5 — Pedidos (sin pago en línea) · **terminada** (2026-10-08)
 
-- [ ] Carrito y cálculo de total en el servidor (tamaños + extras)
-- [ ] Tipos de pedido (mostrador / mesa / domicilio) activables
-- [ ] Ahora o programado: anticipación 2 h, cada 30 min, máx. 5 por
-      franja, otros días solo si abren (todo editable)
-- [ ] Efectivo y transferencia; matriz de pagos en `/admin/negocio`
-- [ ] Envío a domicilio $40 con switch automático/manual; en manual, la
-      tienda fija el envío en `/admin/pedidos`
-- [ ] `/pedido/<token>` con estado en vivo
-- [ ] `/admin/pedidos`: tablero en vivo, sonido, cambio de estado, marcar pagado
-- [ ] Correo al negocio (Gmail) y evento en Calendar para programados
+Alcance confirmado por el usuario (2026-10-08): mostrador y mesa;
+**domicilio pasa a la Fase 6** (se paga solo con tarjeta).
 
-**Pruebas:** total, mínimo de domicilio ($80), horas programables,
-matriz de pagos, transiciones de estado.
-**Terminada cuando:** se puede pedir de punta a punta y el personal lo ve.
+- [x] Carrito en el navegador (`localStorage`): cantidad y nota por
+      producto; total recalculado en el servidor con los precios de la BD
+- [x] Tipos activables: recoger y mesa (la mesa sale del QR y se valida
+      contra el número de mesas)
+- [x] Ahora o programado (solo recoger): días que abren, cada 30 min, 2 h
+      de anticipación, 5 por horario, hasta 7 días (todo editable)
+- [x] Efectivo y transferencia según la matriz de `/admin/negocio`;
+      transferencia con comprobante subido por el cliente (bucket privado)
+      y sin preparar hasta confirmar el pago
+- [x] `/pedido/<token>`: número del día, estado, datos de transferencia,
+      comprobante, cancelar si sigue "recibido"; se actualiza solo
+- [x] `/admin/pedidos`: tablero en vivo (Supabase Realtime), sonido,
+      avanzar estado, marcar pagado, ver comprobante, cancelar
+- [x] Correo al negocio (pedido nuevo y cancelado por el cliente) y evento
+      en Calendar para programados: listos; se activan con las llaves de
+      Google (P1)
+- [x] Domicilio (dirección, mínimo $80, envío auto/manual) → hecho en la Fase 6
 
-## Pista paralela — 3D / AR · pendiente
+**Pruebas:** `lib/orders.test.ts` (forma del pedido, total, reglas,
+estados), `lib/order-slots.test.ts` (horas programables),
+`lib/order-format.test.ts`. 164 pasan. Manual en `docs/pruebas.md`.
+
+## Pista paralela — 3D / AR · en curso
 
 Ver `docs/3d-ar.md`. Etapas:
-- [ ] Etapa 1: `<model-viewer>` en el detalle de producto con un modelo de prueba
+- [x] Etapa 1: `<model-viewer>` 4.3.1 en el detalle de producto ("Ver en
+      3D" / "Ver en tu mesa"), probado con una taza de prueba generada por
+      script (2026-10-09). Falta medir la carga en un celular real
 - [ ] Etapa 2: affogato, frappé y café generados por IA desde foto + limpieza en Blender
-- [ ] Etapa 3: subir y reemplazar modelos desde `/admin/menu`
+- [x] Etapa 3: subir, cambiar y quitar el `.glb` (y `.usdz` opcional)
+      desde `/admin/menu/producto/<id>` con vista previa; sube directo a
+      Storage (hasta 10 MB, aviso arriba de 4 MB). `lib/models.test.ts`
 - [ ] Etapa 4: mejorar realismo (modelado en Blender, escaneo de waffles)
 
-## Fase 6 — Stripe Checkout · pendiente
+## Fase 6 — Stripe Checkout y domicilio · en curso
 
-- [ ] Cuenta de Stripe de Franco (P9); llaves de prueba primero
-- [ ] Checkout para domicilio (tarjeta, Google Pay, Apple Pay)
-- [ ] Webhook `checkout.session.completed` → pedido pagado
-- [ ] Reembolso desde `/admin/pedidos` (opcional)
-- [ ] Activar domicilio
+Domicilio y el código de Stripe: **hechos** (2026-10-09). Falta la cuenta
+de Stripe (P9) para probar con llaves de prueba y activar.
+
+- [x] Domicilio en `/carrito`: calle y colonia, referencias y **pin en un
+      mapa** (OpenStreetMap + Leaflet, gratis; "Usar mi ubicación"),
+      ahora o programado, mínimo $80 sin el envío, solo tarjeta
+- [x] **Zona de entrega: radio en km** desde el local (5 km, editable en
+      `/admin/negocio`); se revisa en el carrito y en el servidor (P6)
+- [x] Envío automático ($40) o manual: en manual el pedido llega al
+      tablero sin envío, el personal lo pone ("Poner envío") y el cliente
+      ve "Pagar $X" en su pedido
+- [x] Pedidos con tarjeta **no salen en el tablero hasta pagarse** (salvo
+      envío manual) y **se cancelan solos a la hora** sin pagar; el correo
+      al negocio sale al pagar
+- [x] Tablero: dirección, referencias, "Abrir en Maps", distancia,
+      "Salió a entregar"; el cliente ve "En camino"
+- [x] Stripe Checkout (tarjeta, Google Pay, Apple Pay) en español: al
+      hacer el pedido va directo a pagar; "Pagar" en `/pedido/<token>`
+      retoma la misma página si sigue abierta. Renglones con producto,
+      extras y envío; el total sale de la BD
+- [x] Webhook `/api/stripe/webhook` (firma verificada):
+      `checkout.session.completed` → pagado, sale en el tablero, correo y
+      Calendar; repetido no hace nada; `checkout.session.expired` →
+      cancelado solo
+- [x] Reembolso: el personal cancela un pedido pagado → se regresa el
+      dinero antes de cancelar (si Stripe falla, no se cancela); si alguien
+      paga un pedido ya cancelado → se reembolsa solo
+- [x] Al cancelar un pedido sin pagar se cierra su página de pago
+- [ ] Cuenta de Stripe de Franco (P9); llaves de prueba y endpoint del
+      webhook (pasos en `docs/configuracion-y-despliegue.md`)
+- [ ] Probar con la tarjeta de prueba de Stripe (pago, reembolso, vencida)
+- [ ] Activar domicilio y, si Franco quiere, tarjeta en mostrador y mesa
+
+**Pruebas:** `lib/geo.test.ts` (distancia, textos, enlace a Maps),
+domicilio en `lib/orders.test.ts` (forma, zona, mínimo, envío auto y
+manual, tablero, estados con tarjeta), zona en
+`lib/admin/business-form.test.ts` y `lib/card-payment.test.ts` (plazo para
+pagar, renglones de Stripe, monto). 186 pasan. Webhook probado con
+eventos firmados en local (`docs/pruebas.md`).
 
 ## Fase 7 — Instagram · pendiente (no confirmado)
 
@@ -190,4 +241,8 @@ Ver `docs/instagram.md`.
 
 - [ ] Páginas legales con datos finales (P13)
 - [ ] Prueba real con Franco en el local
-- [ ] `docs/manual-franco.md`
+- [x] `docs/manual-franco.md` (borrador 2026-10-09; revisarlo con Franco
+      en la prueba real)
+- [x] Comprobantes de transferencia: se borran solos a los 90 días
+      (editable en Negocio → Métodos de pago); los pedidos se quedan.
+      `lib/retention.test.ts`

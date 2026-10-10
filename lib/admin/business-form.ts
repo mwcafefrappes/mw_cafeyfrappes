@@ -8,6 +8,7 @@ import type { Json, TablesUpdate } from "../database.types";
 import { parsePesosToCents } from "../money";
 import { ALLOWED_METHODS, PAYMENT_METHODS, type OrderType, type PaymentMatrix, type PaymentMethod } from "../payment-methods";
 import { MAX_TABLE_NUMBER } from "../menu";
+import { MAX_PROOF_RETENTION_DAYS, MIN_PROOF_RETENTION_DAYS, parseRetentionDays } from "../retention";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo";
 import { isTimeFormat } from "../time-format";
 import { DAY_NAMES, isTimeOfDay, type WeeklyHour } from "../weekly-hours";
@@ -120,6 +121,10 @@ export function parseOrdersSection(form: FormLike, stripeReady: boolean): FormRe
   if (fee === null) return { ok: false, error: "Revisa el costo de envío." };
   const mode = text(form, "delivery_fee_mode");
   if (mode !== "auto" && mode !== "manual") return { ok: false, error: "Elige cómo se cobra el envío." };
+  const radiusKm = Number(text(form, "delivery_radius_km").replace(",", "."));
+  if (!Number.isFinite(radiusKm) || radiusKm < 0.1 || radiusKm > 50) {
+    return { ok: false, error: "La zona de entrega va de 0.1 a 50 km." };
+  }
 
   return {
     ok: true,
@@ -130,6 +135,7 @@ export function parseOrdersSection(form: FormLike, stripeReady: boolean): FormRe
       delivery_min_subtotal_cents: minSubtotal,
       delivery_fee_cents: fee,
       delivery_fee_mode: mode,
+      delivery_radius_m: Math.round(radiusKm * 1000),
     },
   };
 }
@@ -152,6 +158,10 @@ export function parsePaymentsSection(form: FormLike, stripeReady: boolean): Form
 
   const clabe = text(form, "transfer_clabe").replace(/\s/g, "");
   if (clabe && !isValidClabe(clabe)) return { ok: false, error: "La CLABE no es válida (deben ser 18 dígitos; revisa que esté bien copiada)." };
+  const retention = parseRetentionDays(text(form, "proof_retention_days"));
+  if (retention === null) {
+    return { ok: false, error: `Los días para guardar comprobantes van de ${MIN_PROOF_RETENTION_DAYS} a ${MAX_PROOF_RETENTION_DAYS}.` };
+  }
 
   return {
     ok: true,
@@ -160,6 +170,7 @@ export function parsePaymentsSection(form: FormLike, stripeReady: boolean): Form
       transfer_bank: text(form, "transfer_bank") || null,
       transfer_clabe: clabe || null,
       transfer_holder: text(form, "transfer_holder") || null,
+      proof_retention_days: retention,
     },
   };
 }

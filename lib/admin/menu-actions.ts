@@ -13,7 +13,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServiceSupabase } from "../supabase";
-import { LONG_CACHE_CONTROL, MENU_PHOTOS_BUCKET } from "../storage";
+import { isModelKind, isModelPathFor, MAX_MODEL_BYTES, modelColumn, modelPath, modelSizeCheck, type ModelKind } from "../models";
+import { LONG_CACHE_CONTROL, MENU_MODELS_BUCKET, MENU_PHOTOS_BUCKET } from "../storage";
 import { requireAdminUser } from "./auth";
 import { getProductAdmin } from "./data";
 import {
@@ -70,6 +71,11 @@ async function removeStoredPhoto(path: string | null) {
   if (path && !path.startsWith("/")) {
     await getServiceSupabase().storage.from(MENU_PHOTOS_BUCKET).remove([path]);
   }
+}
+
+async function removeStoredModels(paths: (string | null)[]) {
+  const stored = paths.filter((path): path is string => Boolean(path) && !path!.startsWith("/"));
+  if (stored.length > 0) await getServiceSupabase().storage.from(MENU_MODELS_BUCKET).remove(stored);
 }
 
 // ---------------------------------------------------------------------
@@ -230,6 +236,7 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
   const { error } = await getServiceSupabase().from("products").delete().eq("id", id);
   if (error) throw error;
   await removeStoredPhoto(product.photo_path);
+  await removeStoredModels([product.model_glb_path, product.model_usdz_path]);
 
   revalidateMenu();
   succeed(MENU_PATH, `"${product.name}" se borró.`);
@@ -287,6 +294,79 @@ export async function removeProductPhotoAction(formData: FormData): Promise<void
 
   revalidateMenu();
   succeed(formPath, "Foto quitada.");
+}
+
+// ---------------------------------------------------------------------
+// Modelos 3D (`docs/3d-ar.md`): el navegador los sube directo a Storage
+// con un permiso firmado (no pasan por Vercel, que corta en 4.5 MB).
+// ---------------------------------------------------------------------
+
+export type ModelActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
+
+/** Paso 1: permiso de un solo uso para subir el archivo a una ruta nueva. */
+export async function prepareModelUploadAction(productId: string, kind: ModelKind, bytes: number): Promise<ModelActionResult<{ path: string; token: string }>> {
+  await requireAdminUser();
+  if (!isModelKind(kind)) return { ok: false, error: "Tipo de archivo desconocido." };
+  const size = modelSizeCheck(bytes);
+  if (size.error) return { ok: false, error: size.error };
+  const product = await getProductAdmin(productId);
+  if (!product) return { ok: false, error: "Ese producto ya no existe." };
+  if (kind === "usdz" && !product.model_glb_path) return { ok: false, error: "Primero sube el modelo .glb." };
+
+  const path = modelPath(productId, kind, Date.now());
+  const { data, error } = await getServiceSupabase().storage.from(MENU_MODELS_BUCKET).createSignedUploadUrl(path);
+  if (error) throw error;
+  return { ok: true, path: data.path, token: data.token };
+}
+
+/** Paso 2: el archivo ya está en Storage; se revisa y se liga al producto. */
+export async function saveProductModelAction(productId: string, kind: ModelKind, path: string): Promise<ModelActionResult> {
+  await requireAdminUser();
+  if (!isModelKind(kind) || !isModelPathFor(productId, kind, path)) return { ok: false, error: "No reconocemos ese archivo." };
+  const product = await getProductAdmin(productId);
+  if (!product) return { ok: false, error: "Ese producto ya no existe." };
+
+  const supabase = getServiceSupabase();
+  const bucket = supabase.storage.from(MENU_MODELS_BUCKET);
+  const { data: info, error: infoError } = await bucket.info(path);
+  if (infoError || !info) return { ok: false, error: "No encontramos el archivo subido. Intenta otra vez." };
+  if ((info.size ?? 0) > MAX_MODEL_BYTES) {
+    await bucket.remove([path]);
+    return { ok: false, error: "El archivo pesa demasiado." };
+  }
+
+  const column = modelColumn(kind);
+  const { error } = await supabase
+    .from("products")
+    .update(kind === "glb" ? { model_glb_path: path, updated_at: new Date().toISOString() } : { model_usdz_path: path, updated_at: new Date().toISOString() })
+    .eq("id", productId);
+  if (error) throw error;
+  await removeStoredModels([product[column]]);
+  revalidateMenu();
+  revalidatePath(`${MENU_PATH}/producto/${productId}`);
+  return { ok: true };
+}
+
+export async function removeProductModelAction(formData: FormData): Promise<void> {
+  await requireAdminUser();
+  const id = field(formData, "id");
+  const kind = field(formData, "kind");
+  const formPath = `${MENU_PATH}/producto/${id}`;
+  if (!isModelKind(kind)) fail(formPath, "Tipo de archivo desconocido.");
+  const product = await getProductAdmin(id);
+  if (!product) fail(MENU_PATH, "Ese producto ya no existe.");
+
+  // Sin .glb no hay 3D: se quita también la versión para iPhone.
+  const update = kind === "glb" ? { model_glb_path: null, model_usdz_path: null } : { model_usdz_path: null };
+  const { error } = await getServiceSupabase()
+    .from("products")
+    .update({ ...update, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+  await removeStoredModels(kind === "glb" ? [product.model_glb_path, product.model_usdz_path] : [product.model_usdz_path]);
+
+  revalidateMenu();
+  succeed(formPath, kind === "glb" ? "Modelo 3D quitado." : "Versión para iPhone quitada.");
 }
 
 // ---------------------------------------------------------------------

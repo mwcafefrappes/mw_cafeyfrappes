@@ -6,8 +6,9 @@
 // Nunca intercepta /admin, /api ni /pedido: esas rutas siempre van a la
 // red (sesión de Supabase Auth, webhooks y estado del pedido en vivo).
 
-const CACHE_NAME = "mw-cafe-shell-v1";
-const APP_SHELL = ["/", "/manifest.webmanifest"];
+const CACHE_NAME = "mw-cafe-shell-v2";
+// La app instalada abre en /menu (start_url del manifest).
+const APP_SHELL = ["/", "/menu", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -48,7 +49,9 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match(url.pathname.startsWith("/menu") ? "/menu" : "/"))
+        )
     );
     return;
   }

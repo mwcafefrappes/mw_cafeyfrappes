@@ -9,6 +9,9 @@ export interface MenuProductView extends PricedProduct {
   tags: string[];
   /** URL ya resuelta (Storage o `public/`); `null` = sin foto. */
   photoUrl: string | null;
+  /** Modelo 3D (`.glb`) y versión para iPhone (`.usdz`, opcional); `null` = sin 3D. */
+  modelUrl: string | null;
+  modelIosUrl: string | null;
   priceLabel: string;
   product_sizes: { id: string; name: string; price_cents: number }[];
   extra_groups: PricedExtraGroup[];

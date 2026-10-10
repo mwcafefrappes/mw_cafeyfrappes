@@ -57,6 +57,13 @@ export const env = {
   get stripeReady() {
     return Boolean(process.env.STRIPE_SECRET_KEY);
   },
+  get stripeSecretKey() {
+    return requireEnv("STRIPE_SECRET_KEY");
+  },
+  /** Firma de los avisos de Stripe (`/api/stripe/webhook`). */
+  get stripeWebhookSecret() {
+    return requireEnv("STRIPE_WEBHOOK_SECRET");
+  },
 };
 
 /** `business_settings.site_url` (editable en /admin) con `APP_BASE_URL` de respaldo. */

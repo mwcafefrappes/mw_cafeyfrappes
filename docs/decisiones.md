@@ -213,3 +213,147 @@ https://claude.ai/artifact/5ze7M1jtJog4Cdfih3PDRy
   producto, 4 enlaces); lo demás se ignora. Alguien podría inflar los
   conteos a propósito; para un negocio de este tamaño se acepta.
 
+## 2026-10-08 — Pedidos (Fase 5)
+
+Confirmado por el usuario:
+- **Domicilio se hace en la Fase 6**, junto con Stripe: se paga solo con
+  tarjeta.
+- **Mesa solo "ahora"**; programar es solo para recoger.
+- **Transferencia: el cliente sube su comprobante** en `/pedido/<token>`
+  y el pedido **no se prepara hasta que el personal confirma el pago**.
+- **El cliente puede cancelar mientras el pedido siga "recibido"**;
+  después, por WhatsApp.
+- **Notas por producto y nota general** del pedido.
+- **Número por día** (#1, #2…), del día en que se entrega: un programado
+  para mañana toma el número de mañana.
+- **Correo y Calendar listos, inactivos hasta tener la cuenta de Google**
+  (P1): sin llaves, el aviso queda en el log y el pedido se crea igual.
+
+Decidido al implementar:
+- **Carrito en el navegador** (sin cuenta); el servidor recalcula todo
+  al pedir y explica qué cambió (agotado, hora llena, cerró).
+- **El cliente sigue su pedido con actualización cada 10 s** (no con
+  Realtime): así la tabla de pedidos nunca se abre al público. El tablero
+  del panel sí usa Realtime (solo cuentas de `admin_users` pueden leer).
+- **Comprobantes en un bucket privado**; el panel los ve con enlaces que
+  caducan en 1 hora. Las capturas se reducen a 2000 px antes de subir.
+- **Sonido del tablero:** hay que tocar "Activar sonido" cada vez que se
+  abre (los navegadores no dejan sonar sin un toque).
+- **Programados en el tablero:** salen en "Nuevos" desde una hora antes de
+  su hora; antes, en "Programados para más tarde".
+- **Cambios del personal condicionados** al estado que vio: si otro
+  dispositivo ya lo movió, se avisa en vez de pisarlo.
+- **Un "pagado" de transferencia no se puede desmarcar** si ya se empezó
+  a preparar.
+- Cualquiera con el link del menú puede hacer pedidos (no hay cuenta):
+  un pedido falso se cancela desde el tablero. Si se vuelve un problema,
+  se agrega un límite.
+- Cuánto tiempo guardar pedidos y comprobantes: decidido el 2026-10-09 (ver abajo).
+
+## 2026-10-09 — Domicilio (Fase 6, sin el cobro)
+
+Confirmado por el usuario:
+- **Envío manual:** el pedido llega al tablero como "falta poner el
+  envío"; el personal escribe el costo y el cliente paga desde su pedido.
+  No se prepara hasta que pague.
+- **Un pedido con tarjeta sin pagar no sale en el tablero**; si no se paga
+  en 1 hora se cancela solo. (En envío manual sí sale, porque la tienda
+  tiene que poner el costo.)
+- **Dirección:** calle y número, colonia, referencias y un **pin en un
+  mapa** (OpenStreetMap, gratis), con "Usar mi ubicación" opcional.
+- **Zona de entrega: radio de 5 km** desde el local, editable en
+  `/admin/negocio` (resuelve P6).
+
+Decidido al implementar:
+- El radio se mide **en línea recta** desde la latitud y longitud del
+  local (`/admin/negocio` → Ubicación). Sin ubicación, no hay domicilio.
+- El **mínimo ($80) es sin el envío**.
+- El pin queda fijo al centro y el cliente mueve el mapa (como las apps de
+  transporte); el punto solo cuenta cuando el cliente mueve el mapa o usa
+  su ubicación.
+- La **cancelación automática** se hace al abrir el carrito o la página
+  de un pedido (no hay cron extra: Vercel Hobby solo da uno al
+  día). Se marca como cancelado "por el sistema".
+- **El cliente no puede cancelar un pedido ya pagado con tarjeta**: lo
+  cancela el personal para regresarle el dinero (reembolso con Stripe).
+- El correo al negocio de un pedido con tarjeta sale **al pagarse**; el de
+  envío manual, al llegar (para poner el envío).
+- El número del día se asigna al crear el pedido: si alguien no paga, ese
+  número se salta.
+- En el tablero, el botón de "listo" de domicilio dice "Salió a entregar"
+  y el cliente ve "¡Va en camino!".
+- El sonido del tablero ahora suena cuando **aparece** un pedido nuevo en
+  "Nuevos" (también uno con tarjeta que se acaba de pagar).
+
+## 2026-10-09 — Stripe Checkout (Fase 6, sin cuenta todavía)
+
+Pedido por el usuario: avanzar todo el código antes de tener la cuenta.
+
+Decidido al implementar:
+- Librería oficial `stripe` 22.6.2 (la 23 salió hace una semana).
+- **Al hacer un pedido con tarjeta se va directo a la página de pago de
+  Stripe**; si no se pudo abrir, a su pedido, donde está "Pagar".
+- Página de pago en español (`es-419`), con un renglón por producto
+  (tamaño, extras y nota) y el envío. Si los renglones no suman el total
+  guardado, se cobra un solo renglón "Pedido #N" por el total.
+- **Plazo para pagar:** 60 min desde el pedido; Stripe exige que su
+  página dure al menos 30 min, así que si alguien toca "Pagar" al final
+  del plazo se alarga lo necesario (`pay_by`) para no cancelarle mientras
+  paga. Con envío manual, 60 min desde que toca "Pagar".
+- **Solo el webhook marca pagado** (CLAUDE.md 5.3). Al volver de Stripe
+  el cliente ve "Estamos confirmando tu pago…" hasta que llega el aviso.
+- Si llega el pago de un pedido que ya se canceló, **se reembolsa solo**.
+- **El personal cancela un pedido pagado → primero el reembolso**; si
+  Stripe falla, el pedido no se cancela y se avisa. Reembolso completo
+  (no hay reembolsos parciales).
+- Al cancelar un pedido sin pagar (cliente o personal), se cierra su
+  página de pago para que ya no se pueda pagar.
+- La dirección de regreso de Stripe es el mismo sitio desde el que se
+  pagó (producción, preview o local).
+
+## 2026-10-09 — Comprobantes, 3D y manual
+
+Confirmado por el usuario:
+- **Las capturas de comprobantes se guardan 90 días** por defecto,
+  editable en `/admin/negocio` (Métodos de pago). Las borra el cron
+  diario; el pedido se queda para el historial y las métricas.
+- Siguiente trabajo: 3D/AR y el manual de Franco (Instagram sigue sin
+  confirmar).
+
+Decidido al implementar:
+- Días permitidos para comprobantes: de 7 a 3650. El aviso de privacidad
+  muestra el número actual.
+- `@google/model-viewer` 4.3.1 (gratis, de Google) con `three` 0.183.2.
+  Se descarga solo cuando el cliente toca "Ver en 3D".
+- **Los modelos se suben directo a Supabase Storage** con un permiso
+  firmado de un solo uso: Vercel corta las subidas a 4.5 MB y un modelo
+  puede pesar más. El servidor revisa que el archivo exista y su tamaño
+  antes de ligarlo. Máximo 10 MB (el tope del bucket); aviso arriba de
+  4 MB (la meta de `docs/3d-ar.md`).
+- El navegador revisa que el archivo de verdad sea `.glb` o `.usdz` (los
+  primeros bytes) antes de subirlo.
+- Quitar el `.glb` quita también el `.usdz`.
+- "Ver en tu mesa" usa realidad aumentada a **tamaño real** (`ar-scale`
+  fijo): los modelos deben venir en metros.
+
+## 2026-10-09 — App instalada (PWA)
+
+Confirmado por el usuario:
+- La app instalada abre en el **menú** (`start_url: /menu`); el `id` del
+  manifest sigue en `/` para no duplicar instalaciones existentes.
+- Atajos al dejar presionado el ícono (Android): **Menú** y **Mis
+  pedidos** (`/mis-pedidos`, los pedidos de las últimas 12 horas que
+  recuerda ese celular).
+- Ofrecer "Instalar app" en el **menú** (aviso que se puede cerrar), **al
+  terminar un pedido** (`/pedido/<token>`) y en la portada (ya estaba).
+
+Decidido al implementar:
+- El aviso del menú y del pedido sale **solo en celular** (Android o
+  iPhone) y nunca dentro de la app instalada. Si el cliente lo cierra, no
+  vuelve a salir en ninguno de los dos lugares (se recuerda en el
+  celular). La sección de la portada se queda siempre.
+- `/menu` entra al caché inicial del service worker para que la app abra
+  sin señal; `/mis-pedidos` no se indexa en Google.
+- En iPhone, la app instalada guarda sus datos aparte de Safari: un
+  pedido hecho en Safari no aparece en "Mis pedidos" de la app (límite de
+  Apple).

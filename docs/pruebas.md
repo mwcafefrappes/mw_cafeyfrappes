@@ -19,6 +19,14 @@ pnpm build
 | `lib/item-price.test.ts` | Precio de un producto con tamaño y extras, agotado, extras ajenos o repetidos, mínimo y máximo por grupo |
 | `lib/landing-content.test.ts` | Textos de la landing: lo guardado manda, vacío cae al valor por defecto; links de Google/Apple Maps |
 | `lib/admin/menu-form.test.ts` | Formularios de `/admin/menu`: precio en centavos, tamaños (vacíos, repetidos, precio inválido), frío y caliente a la vez, mínimo/máximo de extras, slugs, mover arriba/abajo |
+| `lib/orders.test.ts` | Pedidos: forma (recoger con nombre y teléfono, mesa sin teléfono y solo "ahora", domicilio con teléfono, dirección y punto en el mapa, cantidades 1–20), **total en el servidor** (tamaño + extras × cantidad), agotados y extras inválidos con el nombre del producto, reglas (cerrado = solo programado, horario sin lugar, tipo apagado, mesa inexistente, matriz de pagos, domicilio fuera del radio o apagado), **envío y mínimo** (automático $40, manual sin envío, mínimo sin contar el envío), quién sale en el tablero, **estados** (recibido → preparando → listo → entregado, transferencia y tarjeta sin preparar hasta pagar, envío manual antes de pagar, quién puede cancelar) |
+| `lib/card-payment.test.ts` | Plazo para pagar (60 min, mínimo de Stripe de 31 min, envío manual), renglones de la página de pago (producto, tamaño, extras, nota, envío; si no suman el total, un solo renglón), monto y moneda pagados |
+| `lib/models.test.ts` | Modelos 3D: formato `.glb` / `.usdz` por sus primeros bytes, ruta en Storage solo de ese producto y tipo, máximo 10 MB y aviso arriba de 4 MB |
+| `lib/retention.test.ts` | Fecha de corte de comprobantes y días permitidos (7 a 3650) |
+| `lib/time-ago.test.ts` | "hace un momento", "hace 25 min", "hace 2 h" (Mis pedidos) |
+| `lib/geo.test.ts` | Distancia en línea recta, coordenadas válidas, "850 m" / "3.2 km", enlace a Maps |
+| `lib/order-slots.test.ts` | Horas programables: 2 h de anticipación, cada 30 min, solo días que abren, hasta N días, horario lleno con 5, horas inventadas, cierre después de medianoche |
+| `lib/order-format.test.ts` | "Hoy / Mañana / Domingo 11 oct", hora en el formato del negocio, renglón del pedido, teléfono |
 | `lib/metrics.test.ts` | `/admin/metricas`: métricas y claves válidas (mesa 1–99, id de producto, 4 enlaces), periodo de 7/30/90 días, "hoy" en hora de México, suma por día, mesa, producto y enlace dentro del periodo |
 | `lib/qr.test.ts` | `/admin/qr`: enlace con `?mesa=N` o sin mesa, hueco del logo (impar, dentro de lo que la corrección recupera, sin tocar las esquinas), contraste y avisos de color, nombres de archivo, usuario de Instagram |
 | `lib/admin/landing-form.test.ts` | `/admin/landing`: espacios y renglones, vacío o igual al original = `null`, sección desconocida, largos máximos, qué secciones llevan foto |
@@ -45,8 +53,27 @@ con `is_available = false`.
 
 ```bash
 curl -i localhost:3000/api/cron/daily                                  # 401
-curl -i -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/daily   # 200 {"ok":true}
+curl -i -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/daily   # 200 {"ok":true,"proofsDeleted":0}
 ```
+
+Verificado 2026-10-09 contra Supabase local: un pedido de hace 100 días y
+otro de hace 10, cada uno con comprobante → `{"ok":true,"proofsDeleted":1}`;
+se borró solo el viejo (el archivo ya no existe y el pedido queda sin
+comprobante), el de 10 días sigue.
+
+## 3D (manual, contra Supabase local)
+
+Verificado 2026-10-09 con una taza de prueba de 12 KB generada por script
+(9 cm de alto, sin descargar nada):
+- `/admin/menu/producto/<id>` → "Vista 3D" → subir el `.glb` → "Modelo 3D
+  listo.", vista previa girando y botones "Cambiar modelo .glb", "Subir
+  versión para iPhone (.usdz)" y "Quitar modelo 3D".
+- Un archivo de texto con nombre `.glb` → "Ese archivo no es un modelo
+  .glb." (no se sube).
+- `/menu?producto=waffle-en-cono` en celular (375 px) → botón "Ver en 3D"
+  sobre la foto → la taza en 3D y "Ver en tu mesa"; "Ver foto" regresa.
+- **Pendiente en celulares reales:** Scene Viewer (Android) y Quick Look
+  (iPhone), y el tiempo de carga con 4G.
 
 ## Menú (`/menu`, manual)
 
@@ -144,6 +171,77 @@ Verificado 2026-10-08 (los QR se decodificaron con jsQR en el navegador):
   esta computadora".
 - En celular (375 px) la vista previa va primero, sin scroll de lado.
 
+## Pedidos (manual, contra Supabase local)
+
+Verificado 2026-10-08 (con el horario local abierto todo el jueves y una
+CLABE de prueba; al final se borraron los pedidos y se regresó todo):
+- `/menu?mesa=2` → Frappé moka 20 oz + crema, ×2, nota "poco hielo" →
+  "2 × Frappé moka en tu pedido." y barra "Ver mi pedido · 2 · $190".
+- `/carrito`: "En mi mesa (mesa 2)" o recoger; transferencia y nota →
+  pedido #1, mesa 2, $190 calculado en el servidor; correo simulado en el
+  log; el menú muestra "Tu pedido #1: ver cómo va".
+- `/pedido/<token>`: "Esperando tu transferencia", CLABE, banco, titular,
+  concepto. Subir captura de 1200×2400 → se guarda JPG de 28 KB en el
+  bucket privado; la URL pública da 400 y la firmada del panel abre.
+- Tablero (en vivo): #1 en "Nuevos" sin botón de preparar →
+  "Ya llegó la transferencia" → "Empezar a preparar" → "Marcar listo"
+  (el cliente ve "¡Listo! Ya va a tu mesa") → "Entregado": la página del
+  cliente cambió sola a "Entregado. ¡Buen provecho!" sin recargar.
+- Recoger programado para mañana 8:00 p. m., efectivo, teléfono
+  "958 111 2233" → #1 del viernes (`529581112233`), en "Programados para
+  más tarde"; el cliente lo cancela → "Cancelamos tu pedido.", correo
+  simulado, y aparece en "Entregados y cancelados hoy".
+- Horarios ofrecidos: hoy desde 2 h después, mañana y los días que abren
+  hasta 7 días adelante.
+- Celular (375 px): tablero y carrito sin scroll de lado.
+
+## Domicilio (manual, contra Supabase local)
+
+Verificado 2026-10-09 con una `STRIPE_SECRET_KEY` de relleno solo para el
+servidor local (para poder activar domicilio), horario abierto todo el día;
+al final se borraron los pedidos y se regresó todo:
+- `/carrito` → "A domicilio": calle, referencias y mapa con el círculo de
+  5 km. Mover el mapa → "Listo: 310 m del local."; muy lejos → "Ese punto
+  está a 91.1 km del local, fuera de nuestra zona de entrega" y "Hacer
+  pedido" no envía.
+- Envío automático: Waffle $95 + envío $40 → pedido #1 de $135, "Falta
+  pagar tu pedido", botón "Pagar $135" y aviso de 60 minutos. En la BD:
+  `on_board = false`, 310 m. El tablero no lo muestra y no se mandó
+  correo. Al marcarlo pagado en la BD (lo que hará el webhook) aparece en
+  "Nuevos" con dirección, "Abrir en Maps · 310 m del local" y "incluye $40
+  de envío"; "Empezar a preparar" → "Salió a entregar".
+- Envío manual + programado (hoy 1:00 p. m.): pedido #2 de $90, "en un
+  momento te decimos el costo del envío", "Total sin envío"; correo
+  simulado. En el tablero (programados) aparece "Costo del envío $40" →
+  se cambia a 35 → "Poner envío" → $125 "incluye $35 de envío", "Esperando
+  a que el cliente pague con tarjeta"; el cliente ve "Pagar $125".
+- Pedido con tarjeta sin pagar de hace 2 horas → al abrirlo: "Este pedido
+  se canceló porque no se pagó a tiempo".
+- Celular (375 px): el mapa se encuadra bien al cambiar de tamaño.
+
+## Stripe (manual)
+
+Verificado 2026-10-09 sin cuenta de Stripe: servidor local con llaves de
+relleno y eventos armados y **firmados en local** con
+`stripe.webhooks.generateTestHeaderString` (no llama a Stripe), mandados
+a `/api/stripe/webhook`:
+- Firma con otro secreto → 400 "Firma inválida".
+- `checkout.session.completed` de un pedido con tarjeta sin pagar → 200;
+  queda pagado, en el tablero, con el `payment_intent`; correo simulado
+  "Pedido #1 · A domicilio · $135".
+- El mismo aviso otra vez → 200 y no cambia nada (sin segundo correo).
+- `checkout.session.expired` → el pedido queda cancelado "por el sistema".
+- Pago de un pedido ya cancelado → intenta el reembolso (con la llave de
+  relleno Stripe lo rechaza) y responde 500 para que Stripe reintente.
+- "Pagar" sin llave válida → "No pudimos abrir la página de pago. Intenta
+  otra vez en un momento."; con `?pagado=1` → "Estamos confirmando tu
+  pago…".
+
+**Pendiente con la cuenta de prueba (P9):** abrir la página de pago, pagar
+con `4242 4242 4242 4242`, Google Pay en Android, dejar vencer una página,
+cancelar desde el tablero un pedido pagado (reembolso), con
+`stripe listen` en local y luego en producción.
+
 ## Métricas (manual, contra Supabase local)
 
 Verificado 2026-10-08:
@@ -163,3 +261,17 @@ Verificado 2026-10-08:
 ```bash
 curl -i -X POST -d '{"m":"menu_view","k":"3"}' localhost:3000/api/metrics   # 204
 ```
+
+## App instalada (manual, vista de celular)
+
+Verificado 2026-10-09 en 375 px con Supabase local:
+- `/menu` → aviso "Instala MW Café en tu celular…" → **Instalar** abre la
+  guía (Android, paso 1 de 3) → la × lo oculta y ya no vuelve al recargar.
+- `/pedido/<token>` → aviso "Instala la app para ver tus pedidos…" arriba
+  de WhatsApp / Cancelar.
+- `/mis-pedidos` con un pedido recordado → "Pedido #12 · hace 24 min" y
+  "Ver cómo va"; sin pedidos → mensaje y "Ver el menú".
+- `/manifest.webmanifest` → `start_url` `/menu` y los dos atajos;
+  `/robots.txt` bloquea `/mis-pedidos`; la portada sigue con "Instala la app".
+- **Pendiente en celulares reales:** instalar en Android y iPhone, que abra
+  en el menú y los atajos del ícono.

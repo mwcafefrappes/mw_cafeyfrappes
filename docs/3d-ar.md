@@ -24,6 +24,17 @@ bebida aparece sobre la superficie, a tamaño real.
 | gltf-transform (CLI) | Comprimir (Draco/Meshopt, texturas WebP) | Gratis |
 | modelviewer.dev/editor | Probar iluminación y cámara antes de subir | Gratis |
 
+## Estado (2026-10-09)
+
+- **Etapas 1 y 3 hechas:** el visor está en el detalle del producto y el
+  modelo se sube, cambia o quita en `/admin/menu/producto/<id>` → "Vista
+  3D". Probado con una taza de prueba; falta probar Scene Viewer y Quick
+  Look en celulares reales.
+- Los modelos se suben directo a Storage (hasta 10 MB; meta ≤ 4 MB) y
+  deben venir **en metros y a tamaño real**: "Ver en tu mesa" no deja
+  cambiar la escala.
+- Siguiente: etapa 2 (modelos reales por IA + Blender).
+
 ## Etapas
 
 1. **Visor listo:** `<model-viewer>` en el detalle de producto con un

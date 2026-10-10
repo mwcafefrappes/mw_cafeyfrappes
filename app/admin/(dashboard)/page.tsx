@@ -61,16 +61,13 @@ export default async function AdminHomePage() {
         ))}
       </dl>
 
-      <section className="rounded-[10px] border border-brand-border p-4 text-sm">
-        <h2 className="font-semibold">Lo que viene en el panel</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-brand-ink/80">
-          <li>Pedidos en vivo.</li>
-        </ul>
-        <p className="mt-3">
-          <Link href="/" className="underline underline-offset-4">
-            Ver el sitio
-          </Link>
-        </p>
+      <section className="flex flex-wrap gap-x-5 gap-y-2 rounded-[10px] border border-brand-border p-4 text-sm">
+        <Link href="/admin/pedidos" className="font-semibold underline underline-offset-4">
+          Ver los pedidos en vivo
+        </Link>
+        <Link href="/" className="underline underline-offset-4">
+          Ver el sitio
+        </Link>
       </section>
     </div>
   );

@@ -148,3 +148,88 @@ La variante `dark:` de Tailwind respeta ambas cosas.
   layout (enlaces con `data-track` en la portada).
 - `/admin/metricas` lee por páginas de 1000 (límite de Supabase) y
   resume con `summarizeMetrics`.
+
+## Pedidos (Fase 5)
+
+- Tablas `orders` (token, `service_day` + `number` únicos, tipo, mesa,
+  cliente, programado, estado, pago, comprobante, totales) y
+  `order_items` (copia de nombres y precios). Número del día con
+  `next_order_number()` sobre `order_day_counters` (sin carreras). RLS:
+  solo cuentas de `admin_users` leen; nadie escribe salvo `service_role`.
+  `orders` está en la publicación `supabase_realtime`.
+- Lógica pura: `lib/orders.ts` (forma, reglas, precios, estados),
+  `lib/order-slots.ts` (horas programables), `lib/order-config.ts`
+  (ajustes → reglas), `lib/order-format.ts` (textos).
+- Servidor: `lib/order-server.ts` (precios desde `getPublicMenu`, horarios
+  ocupados, crear, leer por token, avisos), `lib/order-actions.ts`
+  (crear, cancelar, comprobante), `lib/admin/order-actions.ts`
+  (estado y pago, condicionados al estado visto).
+- Cliente: `app/cart-store.ts` (carrito y pedidos recientes en
+  `localStorage` con `useSyncExternalStore`), `ProductSheet` (Agregar),
+  `app/menu/CartBar.tsx`, `/carrito` (`CheckoutView`), `/pedido/[token]`
+  (con `AutoRefresh` cada 10 s y `ProofUploader`).
+- Panel: `/admin/pedidos` (`OrdersBoard`: Realtime con el cliente de
+  navegador de `@supabase/ssr` + refresco cada 30 s, sonido con WebAudio).
+- Comprobantes: bucket privado `payment-proofs` (`<order_id>/<ts>.jpg`),
+  URLs firmadas de 1 h en el tablero.
+- Avisos: `lib/gmail.ts` y `lib/google-calendar.ts` (portados de Axel),
+  `lib/google-auth.ts`. Sin llaves, solo log.
+
+## Domicilio (Fase 6)
+
+- Migración `20261011000000_delivery.sql`: `business_settings.delivery_radius_m`
+  y en `orders` dirección, referencias, punto (`delivery_lat/lng`),
+  distancia y `on_board` (false = con tarjeta sin pagar; el tablero no lo
+  muestra). `cancelled_by` admite `system`.
+- `lib/geo.ts`: distancia en línea recta y enlace a Maps.
+- `lib/orders.ts`: domicilio en `parseOrderRequest` y `orderRulesError`
+  (zona), `orderTotals` (mínimo y envío), `startsOnBoard`,
+  `needsDeliveryFee`, `canPayOnline`.
+- `lib/order-server.ts`: `expireUnpaidOrders` (se llama al cargar el
+  carrito y la página del pedido).
+- `app/carrito/DeliveryMap.tsx`: Leaflet + OpenStreetMap, cargado solo en
+  el navegador. `setDeliveryFeeAction` en `lib/admin/order-actions.ts`.
+- `startCardPaymentAction` (`lib/order-actions.ts`) es donde se conecta
+  Stripe Checkout.
+
+## Stripe (Fase 6)
+
+- Migración `20261012000000_stripe.sql`: en `orders`,
+  `stripe_checkout_session_id`, `stripe_payment_intent_id` y `pay_by`.
+- `lib/card-payment.ts` (puro): plazo para pagar, renglones de Checkout,
+  monto pagado.
+- `lib/stripe.ts`: cliente del SDK. `lib/stripe-payments.ts`:
+  `openCheckout`, `closeCheckout`, `refundOrder`, `handleStripeEvent`.
+- `app/api/stripe/webhook/route.ts`: verifica la firma con el cuerpo tal
+  cual y atiende los eventos; 500 si algo falla (Stripe reintenta).
+- `placeOrderAction` regresa `checkoutUrl`; `startCardPaymentAction` es
+  "Pagar"; `setOrderStatusAction` reembolsa antes de cancelar uno pagado.
+
+## 3D (pista paralela)
+
+- `lib/models.ts` (puro): tipos `glb`/`usdz`, tamaño, formato, ruta.
+- `app/ModelViewer3D.tsx`: `<model-viewer>` (importado al abrirse) con
+  "Ver en tu mesa"; tipos JSX en `app/model-viewer.d.ts`. Lo usan
+  `ProductSheet` y el panel.
+- Panel: `ModelUploader` → `prepareModelUploadAction` (permiso firmado) →
+  `uploadToSignedUrl` desde el navegador → `saveProductModelAction`
+  (revisa con `storage.info` y liga al producto). Bucket público
+  `menu-models`.
+
+## Comprobantes
+
+- `business_settings.proof_retention_days` (migración
+  `20261013000000_proof_retention.sql`); el cron diario
+  (`/api/cron/daily`) borra hasta 500 capturas por corrida
+  (`lib/retention.ts`).
+
+## App instalada (PWA)
+
+- `app/manifest.ts`: `start_url` `/menu` (el `id` sigue en `/`), atajos
+  `/menu` y `/mis-pedidos`. `public/sw.js` guarda `/` y `/menu` para abrir
+  sin señal (caché `mw-cafe-shell-v2`).
+- `app/useInstallApp.ts`: lo común de instalar (aviso del navegador o guía
+  `InstallGuideModal`) y "ya lo cerró" (`localStorage`). Lo usan
+  `InstallApp` (sección de la portada) e `InstallPrompt` (aviso del menú y
+  de `/pedido/<token>`, solo en celular).
+- `app/mis-pedidos`: lista los pedidos recordados por `cart-store.ts`.

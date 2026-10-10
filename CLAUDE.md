@@ -206,7 +206,8 @@ Matriz editable en `/admin/negocio` (qué método se ofrece en qué tipo):
     recibirlo y el cliente ve el total actualizado en `/pedido/<token>`.
     (Con pago en línea, el cobro de Stripe se hace después de fijar el
     envío: se define en la Fase 6.)
-- Reparte el dueño de la tienda. Zona o radio de entrega: P6.
+- Reparte el dueño de la tienda. Zona: **radio de 5 km** desde el local
+  (editable), el cliente marca su casa en un mapa (confirmado 2026-10-09).
 
 ## 6. Vista 3D / AR
 
@@ -272,7 +273,6 @@ webhook de Stripe (modo de prueba) en `docs/pruebas.md`.
 | P1 | Correo del negocio (dueño de Vercel, Supabase, Google y Stripe; recibe avisos) | 2026-10-06 |
 | P2 | Menú real: nombres, precios, tamaños y extras (los extras actuales son inventados) | 2026-10-06 |
 | P3 | Fotos oficiales de producto (mientras, se publican las historias recortadas) | 2026-10-06 |
-| P6 | Domicilio: zona o radio de entrega (envío $40 y reparto del dueño ya confirmados) | 2026-10-06 |
 | P14 | ¿Hasta cuántos días adelante se puede programar? (7 por defecto, editable) | 2026-10-06 |
 | P8 | Datos de transferencia (CLABE, banco, titular) | 2026-10-06 |
 | P9 | Alta de Stripe a nombre de Franco (RFC, cuenta bancaria, identificación) | 2026-10-06 |

@@ -38,14 +38,14 @@ export type Database = {
                   ]
                 },"business_settings": {
                   Row: {
-                    "business_address": string | null,"business_email": string | null,"business_lat": number | null,"business_lng": number | null,"business_name": string,"business_whatsapp": string | null,"delivery_fee_cents": number,"delivery_fee_mode": string,"delivery_min_subtotal_cents": number,"id": number,"logo_path": string | null,"maps_url": string | null,"order_delivery_enabled": boolean,"order_pickup_enabled": boolean,"order_table_enabled": boolean,"parent_store_instagram_url": string | null,"parent_store_name": string,"payment_methods": NonNullable<Json>,"scheduled_max_days_ahead": number,"scheduled_max_per_slot": number,"scheduled_min_lead_minutes": number,"scheduled_orders_enabled": boolean,"scheduled_slot_minutes": number,"seo_description": string | null,"seo_title": string | null,"site_url": string | null,"social_facebook_url": string | null,"social_instagram_url": string | null,"table_count": number,"tagline": string,"time_format": string,"transfer_bank": string | null,"transfer_clabe": string | null,"transfer_holder": string | null,"updated_at": string,"weekly_hours": NonNullable<Json>
+                    "business_address": string | null,"business_email": string | null,"business_lat": number | null,"business_lng": number | null,"business_name": string,"business_whatsapp": string | null,"delivery_fee_cents": number,"delivery_fee_mode": string,"delivery_min_subtotal_cents": number,"delivery_radius_m": number,"id": number,"logo_path": string | null,"maps_url": string | null,"order_delivery_enabled": boolean,"order_pickup_enabled": boolean,"order_table_enabled": boolean,"parent_store_instagram_url": string | null,"parent_store_name": string,"payment_methods": NonNullable<Json>,"proof_retention_days": number,"scheduled_max_days_ahead": number,"scheduled_max_per_slot": number,"scheduled_min_lead_minutes": number,"scheduled_orders_enabled": boolean,"scheduled_slot_minutes": number,"seo_description": string | null,"seo_title": string | null,"site_url": string | null,"social_facebook_url": string | null,"social_instagram_url": string | null,"table_count": number,"tagline": string,"time_format": string,"transfer_bank": string | null,"transfer_clabe": string | null,"transfer_holder": string | null,"updated_at": string,"weekly_hours": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "business_address"?: string | null,"business_email"?: string | null,"business_lat"?: number | null,"business_lng"?: number | null,"business_name"?: string,"business_whatsapp"?: string | null,"delivery_fee_cents"?: number,"delivery_fee_mode"?: string,"delivery_min_subtotal_cents"?: number,"id"?: number,"logo_path"?: string | null,"maps_url"?: string | null,"order_delivery_enabled"?: boolean,"order_pickup_enabled"?: boolean,"order_table_enabled"?: boolean,"parent_store_instagram_url"?: string | null,"parent_store_name"?: string,"payment_methods"?: NonNullable<Json>,"scheduled_max_days_ahead"?: number,"scheduled_max_per_slot"?: number,"scheduled_min_lead_minutes"?: number,"scheduled_orders_enabled"?: boolean,"scheduled_slot_minutes"?: number,"seo_description"?: string | null,"seo_title"?: string | null,"site_url"?: string | null,"social_facebook_url"?: string | null,"social_instagram_url"?: string | null,"table_count"?: number,"tagline"?: string,"time_format"?: string,"transfer_bank"?: string | null,"transfer_clabe"?: string | null,"transfer_holder"?: string | null,"updated_at"?: string,"weekly_hours"?: NonNullable<Json>
+                    "business_address"?: string | null,"business_email"?: string | null,"business_lat"?: number | null,"business_lng"?: number | null,"business_name"?: string,"business_whatsapp"?: string | null,"delivery_fee_cents"?: number,"delivery_fee_mode"?: string,"delivery_min_subtotal_cents"?: number,"delivery_radius_m"?: number,"id"?: number,"logo_path"?: string | null,"maps_url"?: string | null,"order_delivery_enabled"?: boolean,"order_pickup_enabled"?: boolean,"order_table_enabled"?: boolean,"parent_store_instagram_url"?: string | null,"parent_store_name"?: string,"payment_methods"?: NonNullable<Json>,"proof_retention_days"?: number,"scheduled_max_days_ahead"?: number,"scheduled_max_per_slot"?: number,"scheduled_min_lead_minutes"?: number,"scheduled_orders_enabled"?: boolean,"scheduled_slot_minutes"?: number,"seo_description"?: string | null,"seo_title"?: string | null,"site_url"?: string | null,"social_facebook_url"?: string | null,"social_instagram_url"?: string | null,"table_count"?: number,"tagline"?: string,"time_format"?: string,"transfer_bank"?: string | null,"transfer_clabe"?: string | null,"transfer_holder"?: string | null,"updated_at"?: string,"weekly_hours"?: NonNullable<Json>
                   }
                   Update: {
-                    "business_address"?: string | null,"business_email"?: string | null,"business_lat"?: number | null,"business_lng"?: number | null,"business_name"?: string,"business_whatsapp"?: string | null,"delivery_fee_cents"?: number,"delivery_fee_mode"?: string,"delivery_min_subtotal_cents"?: number,"id"?: number,"logo_path"?: string | null,"maps_url"?: string | null,"order_delivery_enabled"?: boolean,"order_pickup_enabled"?: boolean,"order_table_enabled"?: boolean,"parent_store_instagram_url"?: string | null,"parent_store_name"?: string,"payment_methods"?: NonNullable<Json>,"scheduled_max_days_ahead"?: number,"scheduled_max_per_slot"?: number,"scheduled_min_lead_minutes"?: number,"scheduled_orders_enabled"?: boolean,"scheduled_slot_minutes"?: number,"seo_description"?: string | null,"seo_title"?: string | null,"site_url"?: string | null,"social_facebook_url"?: string | null,"social_instagram_url"?: string | null,"table_count"?: number,"tagline"?: string,"time_format"?: string,"transfer_bank"?: string | null,"transfer_clabe"?: string | null,"transfer_holder"?: string | null,"updated_at"?: string,"weekly_hours"?: NonNullable<Json>
+                    "business_address"?: string | null,"business_email"?: string | null,"business_lat"?: number | null,"business_lng"?: number | null,"business_name"?: string,"business_whatsapp"?: string | null,"delivery_fee_cents"?: number,"delivery_fee_mode"?: string,"delivery_min_subtotal_cents"?: number,"delivery_radius_m"?: number,"id"?: number,"logo_path"?: string | null,"maps_url"?: string | null,"order_delivery_enabled"?: boolean,"order_pickup_enabled"?: boolean,"order_table_enabled"?: boolean,"parent_store_instagram_url"?: string | null,"parent_store_name"?: string,"payment_methods"?: NonNullable<Json>,"proof_retention_days"?: number,"scheduled_max_days_ahead"?: number,"scheduled_max_per_slot"?: number,"scheduled_min_lead_minutes"?: number,"scheduled_orders_enabled"?: boolean,"scheduled_slot_minutes"?: number,"seo_description"?: string | null,"seo_title"?: string | null,"site_url"?: string | null,"social_facebook_url"?: string | null,"social_instagram_url"?: string | null,"table_count"?: number,"tagline"?: string,"time_format"?: string,"transfer_bank"?: string | null,"transfer_clabe"?: string | null,"transfer_holder"?: string | null,"updated_at"?: string,"weekly_hours"?: NonNullable<Json>
                   }
                   Relationships: [
                     
@@ -126,6 +126,60 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"order_day_counters": {
+                  Row: {
+                    "day": string,"last_number": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day": string,"last_number"?: number
+                  }
+                  Update: {
+                    "day"?: string,"last_number"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"order_items": {
+                  Row: {
+                    "extras": NonNullable<Json>,"id": string,"line_cents": number,"note": string | null,"order_id": string,"product_id": string | null,"product_name": string,"quantity": number,"size_name": string | null,"sort_order": number,"unit_cents": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "extras"?: NonNullable<Json>,"id"?: string,"line_cents": number,"note"?: string | null,"order_id": string,"product_id"?: string | null,"product_name": string,"quantity": number,"size_name"?: string | null,"sort_order"?: number,"unit_cents": number
+                  }
+                  Update: {
+                    "extras"?: NonNullable<Json>,"id"?: string,"line_cents"?: number,"note"?: string | null,"order_id"?: string,"product_id"?: string | null,"product_name"?: string,"quantity"?: number,"size_name"?: string | null,"sort_order"?: number,"unit_cents"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_items_order_id_fkey"
+      columns: ["order_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "order_items_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"orders": {
+                  Row: {
+                    "calendar_event_id": string | null,"cancelled_by": string | null,"created_at": string,"customer_name": string,"customer_phone": string | null,"delivery_address": string | null,"delivery_distance_m": number | null,"delivery_fee_cents": number | null,"delivery_lat": number | null,"delivery_lng": number | null,"delivery_references": string | null,"id": string,"note": string | null,"number": number,"on_board": boolean,"pay_by": string | null,"payment_method": string,"payment_proof_path": string | null,"payment_status": string,"scheduled_for": string | null,"service_day": string,"status": string,"stripe_checkout_session_id": string | null,"stripe_payment_intent_id": string | null,"subtotal_cents": number,"table_number": number | null,"token": string,"total_cents": number,"type": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "calendar_event_id"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"customer_name": string,"customer_phone"?: string | null,"delivery_address"?: string | null,"delivery_distance_m"?: number | null,"delivery_fee_cents"?: number | null,"delivery_lat"?: number | null,"delivery_lng"?: number | null,"delivery_references"?: string | null,"id"?: string,"note"?: string | null,"number": number,"on_board"?: boolean,"pay_by"?: string | null,"payment_method": string,"payment_proof_path"?: string | null,"payment_status"?: string,"scheduled_for"?: string | null,"service_day": string,"status"?: string,"stripe_checkout_session_id"?: string | null,"stripe_payment_intent_id"?: string | null,"subtotal_cents": number,"table_number"?: number | null,"token": string,"total_cents": number,"type": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "calendar_event_id"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"customer_name"?: string,"customer_phone"?: string | null,"delivery_address"?: string | null,"delivery_distance_m"?: number | null,"delivery_fee_cents"?: number | null,"delivery_lat"?: number | null,"delivery_lng"?: number | null,"delivery_references"?: string | null,"id"?: string,"note"?: string | null,"number"?: number,"on_board"?: boolean,"pay_by"?: string | null,"payment_method"?: string,"payment_proof_path"?: string | null,"payment_status"?: string,"scheduled_for"?: string | null,"service_day"?: string,"status"?: string,"stripe_checkout_session_id"?: string | null,"stripe_payment_intent_id"?: string | null,"subtotal_cents"?: number,"table_number"?: number | null,"token"?: string,"total_cents"?: number,"type"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"product_extra_groups": {
                   Row: {
                     "group_id": string,"product_id": string,"sort_order": number
@@ -200,6 +254,9 @@ isOneToOne: false
           Functions: {
             "increment_metric":
 { Args: { "p_key": string,"p_metric": string }; Returns: undefined
+                           },
+"next_order_number":
+{ Args: { "p_day": string }; Returns: number
                            }
           }
           Enums: {

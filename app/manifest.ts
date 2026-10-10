@@ -36,8 +36,13 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     short_name: business.shortName,
     description: `Menú y pedidos de ${business.name}: café, frappés y waffles en Huatulco.`,
     lang: "es-MX",
-    start_url: "/",
+    // La app instalada abre en el menú (decisión del usuario 2026-10-09); el `id` se queda en "/".
+    start_url: "/menu",
     scope: "/",
+    shortcuts: [
+      { name: "Ver el menú", short_name: "Menú", url: "/menu" },
+      { name: "Mis pedidos", short_name: "Mis pedidos", url: "/mis-pedidos" },
+    ],
     display: "standalone",
     background_color: "#1a120d",
     theme_color: "#3a2318",
